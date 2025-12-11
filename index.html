@@ -1,0 +1,120 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My 3D Portfolio</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./css/chess-style.css" />
+    <link rel="stylesheet" href="./css/laptop-mode.css" />
+  </head>
+  <body>
+    <div id="loading">Loading...</div>
+    
+    <!-- Chess Welcome Screen -->
+    <div id="chessWelcome">
+      <h1>♟️ 3D Chess AI</h1>
+      <p>Play against an AI trained on 791 features</p>
+      <div class="chess-buttons">
+        <button class="chess-btn primary" id="startChessBtn">
+          ▶ Start Game
+        </button>
+      </div>
+      <p class="loading-text" id="aiLoadingText" style="display: none;">
+        Loading AI Model...
+      </p>
+    </div>
+    
+    <!-- Promotion UI -->
+    <div id="promotionUI">
+      <h2 id="promotionTitle">Choose Your Piece</h2>
+      <div class="promotion-pieces">
+        <button class="promo-piece" data-piece="Q">♛</button>
+        <button class="promo-piece" data-piece="R">♜</button>
+        <button class="promo-piece" data-piece="B">♝</button>
+        <button class="promo-piece" data-piece="N">♞</button>
+      </div>
+    </div>
+    
+    <!-- Status Display (REMOVED EVALUATION) -->
+    <div id="chessStatus">
+      <h3>♟️ Chess Game</h3>
+      <div class="status-item">
+        <span class="status-label">Turn:</span>
+        <span class="status-value" id="turnIndicator">White</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Moves:</span>
+        <span class="status-value" id="moveCounter">0</span>
+      </div>
+  </div>
+    
+    <!-- Control Panel -->
+    <div id="chessControls">
+      <button class="chess-btn danger" id="resetBtn">🔄 Reset</button>
+      <button class="chess-btn secondary" id="exitBtn">✕ Exit</button>
+    </div>
+    
+    <!-- Move Indicator -->
+    <div class="move-indicator" id="moveIndicator"></div>
+    
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen">
+      <h2 id="gameOverTitle">Game Over!</h2>
+      <p id="gameOverMessage">Checkmate!</p>
+      <div class="chess-buttons">
+        <button class="chess-btn primary" id="playAgainBtn">🔄 Play Again</button>
+        <button class="chess-btn secondary" id="exitGameBtn">✕ Exit</button>
+      </div>
+    </div>
+
+    <!-- Camera Debug Info -->
+    <div id="cameraDebug">
+      <div class="debug-line">
+        <span class="debug-label">Pos:</span>
+        <span class="debug-value" id="cameraPos">-</span>
+      </div>
+      <div class="debug-line">
+        <span class="debug-label">Target:</span>
+        <span class="debug-value" id="cameraTarget">-</span>
+      </div>
+    </div>
+    
+    <!-- Laptop Mode UI -->
+    <div id="laptopModeIndicator">
+      <span class="laptop-icon">💻</span>
+      <span>Laptop Mode</span>
+    </div>
+    
+    <button id="laptopExitBtn">✕</button>
+    
+    <div id="laptopHint">Press ESC or click ✕ to exit</div>
+
+    <!-- ONNX Runtime -->
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.0/dist/ort.min.js"></script>
+    
+    <!-- html2canvas for capturing HTML content -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Import Map for Three.js -->
+    <script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/examples/jsm/controls/OrbitControls.js": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/controls/OrbitControls.js",
+    "three/examples/jsm/loaders/GLTFLoader.js": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/loaders/GLTFLoader.js",
+    "three/examples/jsm/loaders/RGBELoader.js": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/loaders/RGBELoader.js"
+  }
+}
+    </script>
+    
+    <!-- Load modules -->
+    <script src="./js/chess-logic.js"></script>
+    <script src="./js/chess-ai-browser.js"></script>
+    <script src="./js/chess-animations.js"></script>
+    <script src="./js/chess-interactions.js"></script>
+    <script type="module" src="./js/main.js"></script>
+    <script src="./js/laptop-screen.js"></script>
+  </body>
+</html>
