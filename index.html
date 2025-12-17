@@ -37,7 +37,7 @@
       </div>
     </div>
     
-    <!-- Status Display (REMOVED EVALUATION) -->
+    <!-- Status Display -->
     <div id="chessStatus">
       <h3>♟️ Chess Game</h3>
       <div class="status-item">
@@ -69,27 +69,9 @@
       </div>
     </div>
 
-    <!-- Camera Debug Info -->
-    <div id="cameraDebug">
-      <div class="debug-line">
-        <span class="debug-label">Pos:</span>
-        <span class="debug-value" id="cameraPos">-</span>
-      </div>
-      <div class="debug-line">
-        <span class="debug-label">Target:</span>
-        <span class="debug-value" id="cameraTarget">-</span>
-      </div>
-    </div>
-    
-    <!-- Laptop Mode UI -->
-    <div id="laptopModeIndicator">
-      <span class="laptop-icon">💻</span>
-      <span>Laptop Mode</span>
-    </div>
     
     <button id="laptopExitBtn">✕</button>
     
-    <div id="laptopHint">Press ESC or click ✕ to exit</div>
 
     <!-- ONNX Runtime -->
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.0/dist/ort.min.js"></script>
@@ -115,6 +97,7 @@
     <script src="./js/chess-animations.js"></script>
     <script src="./js/chess-interactions.js"></script>
     <script type="module" src="./js/main.js"></script>
+    <script src="./js/tv-screen.js"></script>
     <script src="./js/laptop-screen.js"></script>
   </body>
 </html>
