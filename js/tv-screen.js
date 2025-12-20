@@ -150,11 +150,6 @@ setupControls() {
 launchGame(gameIndex) {
   console.log('🎮 Launching game:', this.games[gameIndex].name);
   
-  // Stop background music when entering a game
-  if (this.backgroundMusic) {
-    this.backgroundMusic.pause();
-  }
-  
   // Play launch sound
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   const oscillator = audioCtx.createOscillator();
@@ -241,13 +236,21 @@ deactivate() {
     
     delete this.screenMesh.userData.oldMaterial;
   }
+
+  if (this.backgroundMusic) {
+    this.backgroundMusic.pause();
+    this.backgroundMusic.currentTime = 0;
+  }
+  if (this.clickSound) {
+    this.clickSound.pause();
+    this.clickSound.currentTime = 0;
+  }
+  if (this.beepSound) {
+    this.beepSound.pause();
+    this.beepSound.currentTime = 0;
+  }
   
-  console.log('📺 TV Screen deactivated');
-  // Stop background music
-if (this.backgroundMusic) {
-  this.backgroundMusic.pause();
-  this.backgroundMusic.currentTime = 0;
-}
+  console.log('TV Screen deactivated - All audio stopped');
 }
   
 update() {
@@ -785,7 +788,7 @@ updatePongGame() {
     // AI moves towards predicted position regardless of ball direction
     const centerDiff = (targetY + p.paddleHeight/2) - (p.ai.y + p.paddleHeight/2);
     
-    if (Math.abs(centerDiff) > 2) { // Dead zone to prevent jittering
+    if (Math.abs(centerDiff) > 2) { 
       if (centerDiff > 0) {
         p.ai.y = Math.min(h - p.paddleHeight, p.ai.y + aiSpeed);
       } else {
@@ -836,7 +839,7 @@ updatePongGame() {
   if (p.gameOver) {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
     ctx.fillRect(0, 0, w, h);
-    const winner = p.player.score > p.ai.score ? 'YOU WIN!' : 'AI WINS!';
+    const winner = p.player.score > p.ai.score ? 'YOU WIN!' : 'YOU LOOSE';
     ctx.fillStyle = p.player.score > p.ai.score ? '#00ff88' : '#ff0088';
     ctx.font = 'bold 64px "Courier New"';
     ctx.fillText(winner, w/2, h/2);
@@ -1307,15 +1310,7 @@ exitGame() {
   this.scrollOffset = 0;
   this.targetScroll = this.selectedGame;
   
-  // Resume background music
-  if (this.backgroundMusic) {
-    this.backgroundMusic.currentTime = 0;
-    this.backgroundMusic.play().catch(err => {
-      console.warn('Background music resume failed:', err);
-    });
-  }
-  
-  console.log('🎮 Returned to game selection menu');
+  console.log('Returned to game selection menu');
 }
 }
 // Make it globally available

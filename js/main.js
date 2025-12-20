@@ -27,6 +27,59 @@ let blockAnimating = false; // Track if blocks are animating
 let boardAudio = null; // Audio for board rotation
 let tvParts = []; // TV mode objects
 let tvOutlineMeshes = [];
+
+// Shelf mode variables
+let shelfParts = [];
+let shelfOutlineMeshes = [];
+let shelfScrollPosition = 0; // 0 to 4 (for 5 positions)
+let shelfScrolling = false;
+
+// Radio mode variables
+let radioParts = [];
+let radioOutlineMeshes = [];
+let radioPanel = null;
+let volumeKnob = null;
+let tuneKnob = null;
+let isDraggingVolume = false;
+let isDraggingTune = false;
+let startAngle = 0;
+
+// Shelf camera positions (5 positions total)
+const shelfPositions = [
+  {
+    camera: { x: -0.0859741774289951, y: 1.5291292483291543, z: -0.2568612158995307 },
+    target: { x: -0.06256457322971105, y: 1.572253178788147, z: -1.7993055491816197 },
+    dialogue: "Top shelf: My achievements and certifications - proof of continuous learning.",
+    dialoguePos: "right"
+  },
+  {
+    camera: { x: 0.15686608641575478, y: 1.2410753609864427, z: -0.19765471374559174 },
+    target: { x: 0.15692930967994168, y: 1.229893186878728, z: -1.3320114959046097 },
+    dialogue: "Second shelf: Books and resources that shaped my technical journey.",
+    dialoguePos: "left"
+  },
+  {
+    camera: { x: -0.135033445364163, y: 0.9267996643472357, z: -0.27444583806655487 },
+    target: { x: -0.11162336115874623, y: 0.969923594806249, z: -1.8168901640635515 },
+    dialogue: "Third shelf: Tools and technologies I work with daily.",
+    dialoguePos: "right"
+  },
+  {
+    camera: { x: 0.17578137380019013, y: 0.6389576007712021, z: -0.1917181499956706 },
+    target: { x: 0.17584458850885093, y: 0.6277754266634874, z: -1.326074932155163 },
+    dialogue: "Fourth shelf: Personal projects and experimental work.",
+    dialoguePos: "left"
+  },
+  {
+    camera: { x: -0.10904628393301713, y: 0.31898528375917456, z: -0.2910584604488202 },
+    target: { x: -0.08563192086289545, y: 0.350444516581331, z: -1.8337847124110054 },
+    dialogue: "Bottom shelf: Hardware and gadgets that fuel my passion for tech.",
+    dialoguePos: "right"
+  }
+];
+
+let currentShelfPosition = 0;
+let targetShelfPosition = 0;
 let tvScreen = null; // TV screen controller
 let tvScreenMesh = null;
 let familyFrameParts = []; // fam_frame, fam_frame2
@@ -135,7 +188,8 @@ const dialogueContent = {
   desk: "My workspace where creativity meets productivity. Every item here tells a story of late nights and breakthrough moments.",
   laptop: "This is where the magic happens. Code, designs, and ideas all come to life on this screen.",
   frame: "These frames showcase my passion for gaming and fantasy worlds. They remind me to never stop exploring new realms.",
-  tv: "My retro gaming corner! Use WASD to navigate and ENTER to select your game. Let's play!"
+  tv: "My retro gaming corner! Use WASD to navigate and ENTER to select your game. Let's play!",
+  shelf: "Scroll through my collection - each shelf tells a different story of my journey."
 };
 
 // Sofa mode objects
@@ -143,6 +197,10 @@ let beanBags = [];
 let tableObj = null;
 
 init();
+if (typeof AudioManager !== 'undefined') {
+  window.audioManager = new AudioManager();
+  window.audioManager.init();
+}
 loadScene();
 animate();
 
@@ -198,10 +256,13 @@ function init() {
   window.addEventListener("resize", onWindowResize);
   window.addEventListener("pointermove", onPointerMove);
   window.addEventListener("pointerdown", onPointerClick);
+  window.addEventListener("wheel", onMouseWheel, { passive: false });
+  window.addEventListener("keydown", onKeyDown);
 
   setupChessUI();
   setupDialogueSystem();
   setupCertificateBoard();
+  setupRadioPanel();
 }
 
 function updateCameraDebug() {
@@ -554,7 +615,7 @@ function showCertificateBoard() {
     certificateBoard.style.transform = 'translate(-50%, -50%) scale(1)';
   }, 100);
   
-  console.log('📋 Certificate board shown');
+  console.log('Certificate board shown');
 }
 
 function hideCertificateBoard() {
@@ -588,6 +649,202 @@ function playBoardAudio(audioFile) {
   });
   
   console.log('🔊 Playing board audio:', audioFile);
+}
+
+function setupRadioPanel() {
+  radioPanel = document.createElement('div');
+  radioPanel.id = 'radioPanel';
+  
+  radioPanel.innerHTML = `
+    <div class="radio-header">
+      <h2>RADIO</h2>
+      <div class="subtitle">Vintage Sound System</div>
+    </div>
+    
+    <div class="track-display">
+      <div class="track-name" id="currentTrackName">Track 1</div>
+    </div>
+    
+    <div class="radio-controls">
+      <div class="knob-container">
+        <div class="knob-label">Volume</div>
+        <div class="radio-knob" id="volumeKnob">
+          <div class="knob-pointer"></div>
+          <div class="knob-center"></div>
+        </div>
+        <div class="volume-indicator" id="volumePercent">60%</div>
+      </div>
+      
+      <div class="button-container">
+        <button class="radio-button power-btn" id="powerBtn" title="Power On/Off">
+          <span>⏻</span>
+        </button>
+        <button class="radio-button" id="prevBtn" title="Previous Track">
+          <span>◄</span>
+        </button>
+        <button class="radio-button" id="nextBtn" title="Next Track">
+          <span>►</span>
+        </button>
+      </div>
+      
+      <div class="knob-container">
+        <div class="knob-label">Tune</div>
+        <div class="radio-knob" id="tuneKnob">
+          <div class="knob-pointer"></div>
+          <div class="knob-center"></div>
+        </div>
+      </div>
+    </div>
+    
+    <button id="radioPanelClose">×</button>
+  `;
+  
+  document.body.appendChild(radioPanel);
+  
+  // Setup event listeners
+  volumeKnob = document.getElementById('volumeKnob');
+  tuneKnob = document.getElementById('tuneKnob');
+  
+  // Volume knob drag
+  volumeKnob.addEventListener('mousedown', (e) => {
+    isDraggingVolume = true;
+    startAngle = getAngle(e, volumeKnob);
+  });
+  
+  // Tune knob drag (switches tracks)
+  tuneKnob.addEventListener('mousedown', (e) => {
+    isDraggingTune = true;
+    startAngle = getAngle(e, tuneKnob);
+  });
+  
+  document.addEventListener('mousemove', (e) => {
+    if (isDraggingVolume) {
+      const angle = getAngle(e, volumeKnob);
+      const delta = angle - startAngle;
+      startAngle = angle;
+      
+      if (window.audioManager) {
+        const currentVol = window.audioManager.getVolume();
+        const newVol = Math.max(0, Math.min(1, currentVol + delta / 360));
+        window.audioManager.setVolume(newVol);
+        updateVolumeDisplay(newVol);
+        rotateKnob(volumeKnob, newVol * 270 - 135);
+      }
+    } else if (isDraggingTune) {
+      const angle = getAngle(e, tuneKnob);
+      const delta = angle - startAngle;
+      
+      if (Math.abs(delta) > 30) {
+        if (delta > 0 && window.audioManager) {
+          window.audioManager.nextTrack();
+          updateTrackDisplay();
+        } else if (delta < 0 && window.audioManager) {
+          window.audioManager.prevTrack();
+          updateTrackDisplay();
+        }
+        startAngle = angle;
+      }
+    }
+  });
+  
+  document.addEventListener('mouseup', () => {
+    isDraggingVolume = false;
+    isDraggingTune = false;
+  });
+  
+  // Button listeners
+  document.getElementById('powerBtn').addEventListener('click', () => {
+    const btn = document.getElementById('powerBtn');
+    if (window.audioManager) {
+      if (window.audioManager.isPlaying) {
+        window.audioManager.pause();
+        btn.classList.remove('active');
+      } else {
+        window.audioManager.play();
+        btn.classList.add('active');
+      }
+    }
+  });
+  
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    if (window.audioManager) {
+      window.audioManager.prevTrack();
+      updateTrackDisplay();
+    }
+  });
+  
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    if (window.audioManager) {
+      window.audioManager.nextTrack();
+      updateTrackDisplay();
+    }
+  });
+  
+  document.getElementById('radioPanelClose').addEventListener('click', hideRadioPanel);
+  
+  // Initialize power button state
+  if (window.audioManager && window.audioManager.isPlaying) {
+    document.getElementById('powerBtn').classList.add('active');
+  }
+}
+
+function getAngle(event, element) {
+  const rect = element.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  const angle = Math.atan2(event.clientY - centerY, event.clientX - centerX);
+  return angle * (180 / Math.PI);
+}
+
+function rotateKnob(knob, degrees) {
+  const pointer = knob.querySelector('.knob-pointer');
+  if (pointer) {
+    pointer.style.transform = `translateX(-50%) rotate(${degrees}deg)`;
+    pointer.style.transformOrigin = 'center bottom';
+  }
+}
+
+function updateVolumeDisplay(volume) {
+  const percent = document.getElementById('volumePercent');
+  if (percent) {
+    percent.textContent = Math.round(volume * 100) + '%';
+  }
+}
+
+function updateTrackDisplay() {
+  const trackName = document.getElementById('currentTrackName');
+  if (trackName && window.audioManager) {
+    const track = window.audioManager.getCurrentTrack();
+    trackName.textContent = track.name;
+  }
+}
+
+function showRadioPanel() {
+  if (!radioPanel) return;
+  
+  radioPanel.classList.add('active');
+  
+  // Update displays
+  if (window.audioManager) {
+    const volume = window.audioManager.getVolume();
+    updateVolumeDisplay(volume);
+    rotateKnob(volumeKnob, volume * 270 - 135);
+    updateTrackDisplay();
+    
+    if (window.audioManager.isPlaying) {
+      document.getElementById('powerBtn').classList.add('active');
+    }
+  }
+  
+  console.log('📻 Radio panel opened');
+}
+
+function hideRadioPanel() {
+  if (!radioPanel) return;
+  
+  radioPanel.classList.remove('active');
+  
+  console.log('📻 Radio panel closed');
 }
 
 function showIntroDialogue() {
@@ -828,6 +1085,10 @@ function hideExitButton() {
 }
 
 function exitCurrentMode() {
+  // Update background music for mode change
+  if (window.audioManager) {
+    window.audioManager.updateForMode('normal');
+  }
   console.log(`Exiting ${currentMode} mode`);
   
   hideModeDialogue();
@@ -862,6 +1123,8 @@ function exitCurrentMode() {
     exitBoardMode();
   } else if (currentMode === 'tv') {
     exitTVMode();
+  } else if (currentMode === 'shelf') {
+    exitShelfMode();
   }
 }
 
@@ -956,7 +1219,7 @@ function exitFamilyMode() {
     -2.08570808037242, 0.985057465166684, 2.3500947571065485
   );
   
-  console.log("🖼️ Exited family mode to sofa mode");
+  console.log("Exited family mode to sofa mode");
 }
 
 function exitSofaMode() {
@@ -980,7 +1243,7 @@ function exitSofaMode() {
     -0.19350259303174752, 1.0415828316110878, 1.1136973219807842
   );
   
-  console.log("🛋️ Exited sofa mode to normal mode");
+  console.log("Exited sofa mode to normal mode");
 }
 
 function exitDeskMode() {
@@ -1046,7 +1309,7 @@ function exitBoardMode() {
   const exitAudio = new Audio('./assets/audio/bo2.mp3');
   exitAudio.addEventListener('loadedmetadata', () => {
     const audioDuration = exitAudio.duration * 1000; 
-    console.log('📋 Exit audio duration:', audioDuration + 'ms');
+    console.log('Exit audio duration:', audioDuration + 'ms');
     
     setTimeout(() => {
       // Return to normal mode
@@ -1066,7 +1329,7 @@ function exitBoardMode() {
         -0.19350259303174752, 1.0415828316110878, 1.1136973219807842
       );
       
-      console.log("📋 Exited board mode to normal mode");
+      console.log("Exited board mode to normal mode");
     }, Math.max(audioDuration, 1200)); 
   });
 }
@@ -1096,7 +1359,197 @@ function exitTVMode() {
     -0.19350259303174752, 1.0415828316110878, 1.1136973219807842
   );
   
-  console.log("📺 Exited TV mode to normal mode");
+  console.log("Exited TV mode to normal mode");
+}
+
+function enterShelfMode() {
+  currentMode = 'shelf';
+  previousMode = 'normal';
+  hoverEnabled = true;
+  shelfOutlineMeshes.forEach(item => (item.mesh.visible = false));
+  
+  currentShelfPosition = 0;
+  targetShelfPosition = 0;
+  
+  // Lock camera
+  controls.enabled = false;
+  controls.enablePan = false;
+  controls.enableZoom = false;
+  
+  showExitButton();
+  if (window.audioManager) window.audioManager.updateForMode('shelf');
+  // Animate to first position
+  const pos = shelfPositions[0];
+  animateCameraTo(
+    pos.camera.x, pos.camera.y, pos.camera.z,
+    pos.target.x, pos.target.y, pos.target.z
+  );
+  
+  // Show first position dialogue after animation
+  setTimeout(() => {
+    showShelfDialogue(0);
+  }, 2500);
+  
+  console.log("📚 Entered shelf mode at position 0");
+}
+
+function exitShelfMode() {
+  hideModeDialogue();
+  
+  // Return to normal mode
+  currentMode = 'normal';
+  previousMode = null;
+  hoverEnabled = true;
+  isUserInteracting = false;
+  
+  controls.enabled = true;
+  controls.enablePan = true;
+  controls.enableZoom = true;
+  hideExitButton();
+  
+  // Animate camera back to normal view
+  animateCameraTo(
+    1.695342022365481, 1.1890427194070448, 1.0959525309104552,
+    -0.19350259303174752, 1.0415828316110878, 1.1136973219807842
+  );
+  
+  console.log("Exited shelf mode to normal mode");
+}
+
+function onMouseWheel(event) {
+  if (currentMode !== 'shelf' || isCameraAnimating) return;
+  
+  event.preventDefault();
+  
+  const delta = Math.sign(event.deltaY); // -1 for up, 1 for down
+  
+  // Move target position smoothly by small increments
+  targetShelfPosition += delta * 0.1; // Smooth incremental movement
+  targetShelfPosition = Math.max(0, Math.min(4, targetShelfPosition)); // Clamp to bounds
+  
+  console.log(`Scroll: current=${currentShelfPosition.toFixed(2)}, target=${targetShelfPosition.toFixed(2)}`);
+}
+
+function onKeyDown(event) {
+  if (currentMode !== 'shelf' || isCameraAnimating) return;
+
+  if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+    event.preventDefault();
+    
+    const delta = event.key === 'ArrowDown' ? 1 : -1;
+    
+    // Move target position smoothly by small increments (same as scroll)
+    targetShelfPosition += delta * 0.1;
+    targetShelfPosition = Math.max(0, Math.min(4, targetShelfPosition)); // Clamp to bounds
+    
+    console.log(`Arrow ${event.key}: current=${currentShelfPosition.toFixed(2)}, target=${targetShelfPosition.toFixed(2)}`);
+  }
+}
+
+function updateShelfCamera() {
+  if (currentMode !== 'shelf') return;
+  
+  const diff = targetShelfPosition - currentShelfPosition;
+  
+  if (Math.abs(diff) > 0.001) { 
+    currentShelfPosition += diff * 0.12; 
+
+    const lowerIndex = Math.floor(currentShelfPosition);
+    const upperIndex = Math.ceil(currentShelfPosition);
+    const t = currentShelfPosition - lowerIndex; // 0 to 1 between positions
+    
+    const lowerPos = shelfPositions[lowerIndex];
+    const upperPos = shelfPositions[Math.min(upperIndex, 4)];
+    
+    // Lerp camera position
+    camera.position.set(
+      THREE.MathUtils.lerp(lowerPos.camera.x, upperPos.camera.x, t),
+      THREE.MathUtils.lerp(lowerPos.camera.y, upperPos.camera.y, t),
+      THREE.MathUtils.lerp(lowerPos.camera.z, upperPos.camera.z, t)
+    );
+    
+    // Lerp camera target
+    controls.target.set(
+      THREE.MathUtils.lerp(lowerPos.target.x, upperPos.target.x, t),
+      THREE.MathUtils.lerp(lowerPos.target.y, upperPos.target.y, t),
+      THREE.MathUtils.lerp(lowerPos.target.z, upperPos.target.z, t)
+    );
+    
+    controls.update();
+    
+    // Update dialogue when crossing position thresholds
+    const nearestPosition = Math.round(currentShelfPosition);
+    if (Math.abs(currentShelfPosition - nearestPosition) < 0.15) {
+      showShelfDialogue(nearestPosition);
+    }
+  } else {
+    currentShelfPosition = targetShelfPosition;
+  }
+}
+function showShelfDialogue(positionIndex) {
+  const pos = shelfPositions[positionIndex];
+  if (!pos) return;
+  
+  // Prevent showing same dialogue repeatedly
+  if (dialogueBox.dataset.currentShelfPosition === positionIndex.toString()) {
+    return;
+  }
+  
+  dialogueBox.dataset.currentShelfPosition = positionIndex.toString();
+  
+  // Clear previous content
+  dialogueText.textContent = '';
+  if (typingTimeout) {
+    clearTimeout(typingTimeout);
+    isTyping = false;
+  }
+  
+  // Setup dialogue box
+  dialogueBox.style.display = 'block';
+  dialogueBox.style.pointerEvents = 'auto';
+  dialogueBox.style.cursor = 'default';
+  dialogueBox.style.zIndex = '999';
+  dialogueBox.onclick = null;
+  
+  // Hide click prompt
+  dialogueClickPrompt.style.display = 'none';
+  
+  // Show X button
+  const closeBtn = document.getElementById('dialogueCloseBtn');
+  if (closeBtn) closeBtn.style.display = 'block';
+  
+  // Smaller size
+  dialogueBox.style.maxWidth = '320px';
+  dialogueBox.style.minWidth = '280px';
+  dialogueBox.style.padding = '25px 30px 20px 30px';
+  dialogueBox.style.fontSize = '16px';
+  dialogueText.style.minHeight = '60px';
+  
+  // Position: alternate left/right
+  dialogueBox.style.top = '50%';
+  dialogueBox.style.bottom = 'auto';
+  dialogueBox.style.transform = 'translateY(-50%) scale(0.95)';
+  
+  if (pos.dialoguePos === 'left') {
+    dialogueBox.style.left = '40px';
+    dialogueBox.style.right = 'auto';
+  } else {
+    dialogueBox.style.left = 'auto';
+    dialogueBox.style.right = '40px';
+  }
+  
+  // Default theme colors
+  dialogueBox.style.borderImage = 'linear-gradient(135deg, rgba(94, 231, 223, 0.8), rgba(180, 144, 202, 0.6)) 1';
+  dialogueBox.style.background = 'linear-gradient(145deg, rgba(20, 20, 35, 0.98) 0%, rgba(25, 25, 45, 0.95) 100%)';
+  dialogueBox.style.boxShadow = '0 25px 70px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 0 40px rgba(94, 231, 223, 0.15)';
+  
+  setTimeout(() => {
+    dialogueBox.style.opacity = '1';
+    dialogueBox.style.transform = dialogueBox.style.transform.replace('scale(0.95)', 'scale(1)');
+    typewriterEffect(pos.dialogue);
+  }, 400);
+  
+  console.log(`💬 Showing shelf dialogue for position ${positionIndex}: ${pos.dialoguePos}`);
 }
 
 function animateCameraTo(posX, posY, posZ, targetX, targetY, targetZ) {
@@ -1140,10 +1593,7 @@ function setupChessUI() {
     resetChessGame();
   });
   
-  document.getElementById('exitGameBtn').addEventListener('click', () => {
-    document.getElementById('gameOverScreen').classList.remove('show');
-    exitChessMode();
-  });
+
   
   document.querySelectorAll('.promo-piece').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -1338,7 +1788,11 @@ function resetChessGame() {
       targetMarker.getWorldPosition(targetWorldPos);
       const targetLocalPos = chessBoard.worldToLocal(targetWorldPos.clone());
       
-      pieceObj.position.copy(targetLocalPos);
+      const originalY = pieceObj.userData.originalPosition 
+        ? pieceObj.userData.originalPosition.y 
+        : targetLocalPos.y;
+      
+      pieceObj.position.set(targetLocalPos.x, originalY, targetLocalPos.z);
       pieceObj.visible = true;
       pieceObj.scale.copy(pieceObj.userData.originalScale || new THREE.Vector3(1, 1, 1));
       pieceObj.rotation.y = data.color === 'black' ? Math.PI : 0;
@@ -1547,30 +2001,25 @@ function loadScene() {
           if (child.name === 'game_frame1' || child.name === 'game_frame2' || 
               child.name === 'fantasy_frame_1' || child.name === 'fantasy_frame_2') {
             if (child.name === 'game_frame1' || child.name === 'game_frame2') {
-              child.position.z += 0.01; // Move slightly back to align with frame
+              child.position.z += 0.02; // Move slightly back to align with frame
             }
             
-            // SIMPLIFIED FIX: Just ensure proper material settings
             if (child.name === 'fantasy_frame_1' || child.name === 'fantasy_frame_2') {
-              // Make sure material is proper without render order issues
               if (child.material) {
                 child.material.side = THREE.DoubleSide;
                 child.material.transparent = false;
                 child.material.depthTest = true;
                 child.material.depthWrite = true;
               }
-              console.log('🖼️ Fixed fantasy frame material:', child.name);
             }
             
             frameParts.push(child);
-            deskParts.push(child); // Also add to desk parts for initial hover
+            deskParts.push(child); 
             console.log('Frame found:', child.name);
           }
-          // BOARD MODE OBJECTS - Include all board objects
 if (child.name && (child.name.startsWith('board') || child.name.startsWith('block-'))) {
   boardParts.push(child);
   
-  // Store original rotation for blocks that need animation
   const blockRotationMap = {
     'block-A1': -4,
     'block-C1': -75,
@@ -1604,12 +2053,11 @@ console.log('📋 Board object found:', child.name);
 const tvObjectNames = ['tv_screen', 'seat', 'mat', 'con_1', 'con_2'];
 if (tvObjectNames.includes(child.name)) {
   tvParts.push(child);
-  
+
 // Store TV screen mesh for texture replacement
 if (child.name === 'tv_screen') {
   tvScreenMesh = child;
   
-  // 🔧 CRITICAL: Fix TV screen geometry WITHOUT changing rotation
   child.geometry.computeBoundingBox();
   const bbox = child.geometry.boundingBox;
   const width = bbox.max.x - bbox.min.x;
@@ -1658,42 +2106,59 @@ if (child.name === 'tv_screen') {
   console.log('📺 TV object found:', child.name);
 }
 
-          if (chessPieceNames.includes(child.name)) {
-            chessPiecesToParent.push(child);
-            pieceObjects[child.name] = child;
-          }
+// SHELF MODE OBJECTS
+if (child.name === "shelf") {
+  shelfParts.push(child);
+  console.log('📚 Shelf found:', child.name);
+}
 
-          if (child.name && /^[A-H][1-8]$/.test(child.name)) {
-            squareMarkers[child.name] = child;
-            child.visible = false;
-            if (child.material) {
-              child.material.transparent = true;
-              child.material.opacity = 0;
-            }
-          }
-        }
-      });
+// RADIO MODE OBJECT
+if (child.name === "radio") {
+  radioParts.push(child);
+  console.log('📻 Radio found:', child.name);
+}
 
-      if (chessBoard) {
-        chessPiecesToParent.forEach((piece) => {
-          const worldPos = new THREE.Vector3();
-          piece.getWorldPosition(worldPos);
-          chessBoard.attach(piece);
-          piece.position.copy(chessBoard.worldToLocal(worldPos));
-          piece.userData.originalScale = piece.scale.clone();
-        });
+if (chessPieceNames.includes(child.name)) {
+  chessPiecesToParent.push(child);
+  pieceObjects[child.name] = child;
+}
+
+if (child.name && /^[A-H][1-8]$/.test(child.name)) {
+      squareMarkers[child.name] = child;
+      child.visible = false;
+      if (child.material) {
+        child.material.transparent = true;
+        child.material.opacity = 0;
+      }
+    }
+  }
+});
+
+if (chessBoard) {
+  chessPiecesToParent.forEach((piece) => {
+    const worldPos = new THREE.Vector3();
+    piece.getWorldPosition(worldPos);
+    chessBoard.attach(piece);
+    const localPos = chessBoard.worldToLocal(worldPos);
+    piece.position.copy(localPos);
+    piece.userData.originalScale = piece.scale.clone();
+    piece.userData.originalPosition = { 
+      x: localPos.x, 
+      y: localPos.y, 
+      z: localPos.z 
+    };
+  });
         
-        chessPieces.push(chessBoard);
-        chessBoard.userData.originalScale = chessBoard.scale.clone();
-      }
+  chessPieces.push(chessBoard);
+  chessBoard.userData.originalScale = chessBoard.scale.clone();
+}
 
-      // Ensure screen has original scale saved
-      if (screenMesh && !screenMesh.userData.originalScale) {
-        screenMesh.userData.originalScale = screenMesh.scale.clone();
-        console.log('✅ Screen original scale saved:', screenMesh.userData.originalScale);
-      }
+// Ensure screen has original scale saved
+if (screenMesh && !screenMesh.userData.originalScale) {
+  screenMesh.userData.originalScale = screenMesh.scale.clone();
+  console.log('✅ Screen original scale saved:', screenMesh.userData.originalScale);
+}
 
-      // Create outlines for laptop parts (IMPROVED - smoother, brighter, thicker)
 laptopParts.forEach((part) => {
   part.userData.originalScale = part.userData.originalScale || part.scale.clone();
   const outlineGeo = part.geometry.clone();
@@ -1704,13 +2169,13 @@ const outlineMat = new THREE.MeshBasicMaterial({
     opacity: 0,
     depthWrite: false,
     depthTest: true,
-    polygonOffset: true,      // ← ADD THIS
-    polygonOffsetFactor: -1,  // ← ADD THIS
-    polygonOffsetUnits: -1    // ← ADD THIS
+    polygonOffset: true,      
+    polygonOffsetFactor: -1,  
+    polygonOffsetUnits: -1    
 });
   const outlineMesh = new THREE.Mesh(outlineGeo, outlineMat);
-  outlineMesh.scale.multiplyScalar(1.04); // THICKER outline
-  outlineMesh.renderOrder = 999; // Render on top
+  outlineMesh.scale.multiplyScalar(1.04); 
+  outlineMesh.renderOrder = 999; 
   part.add(outlineMesh);
   outlineMeshes.push(outlineMesh);
   outlineMesh.visible = false;
@@ -1718,7 +2183,6 @@ const outlineMat = new THREE.MeshBasicMaterial({
   outlineMesh.userData.currentOpacity = 0;
 });
 
-      // Create outlines for sofa mode objects (IMPROVED - bright and thick)
 sofaParts.forEach((part) => {
   part.userData.originalScale = part.userData.originalScale || part.scale.clone();
   const outlineGeo = part.geometry.clone();
@@ -1729,12 +2193,12 @@ sofaParts.forEach((part) => {
     opacity: 0,
     depthWrite: false,
     depthTest: true,
-    polygonOffset: true,      // ← ADD THIS
-    polygonOffsetFactor: -1,  // ← ADD THIS
-    polygonOffsetUnits: -1    // ← ADD THIS
+    polygonOffset: true,     
+    polygonOffsetFactor: -1,  
+    polygonOffsetUnits: -1    
 });
   const outlineMesh = new THREE.Mesh(outlineGeo, outlineMat);
-  outlineMesh.scale.multiplyScalar(1.05); // THICKER outline
+  outlineMesh.scale.multiplyScalar(1.05); 
   outlineMesh.renderOrder = 999;
   part.add(outlineMesh);
   sofaOutlineMeshes.push({ mesh: outlineMesh, parent: part });
@@ -1743,7 +2207,6 @@ sofaParts.forEach((part) => {
   outlineMesh.userData.currentOpacity = 0;
 });
 
-      // Create outlines for desk mode objects (IMPROVED)
 deskParts.forEach((part) => {
   part.userData.originalScale = part.userData.originalScale || part.scale.clone();
   const outlineGeo = part.geometry.clone();
@@ -1754,12 +2217,12 @@ deskParts.forEach((part) => {
     opacity: 0,
     depthWrite: false,
     depthTest: true,
-    polygonOffset: true,      // ← ADD THIS
-    polygonOffsetFactor: -1,  // ← ADD THIS
-    polygonOffsetUnits: -1    // ← ADD THIS
+    polygonOffset: true,      
+    polygonOffsetFactor: -1,  
+    polygonOffsetUnits: -1    
 });
   const outlineMesh = new THREE.Mesh(outlineGeo, outlineMat);
-  outlineMesh.scale.multiplyScalar(1.05); // THICKER
+  outlineMesh.scale.multiplyScalar(1.05); 
   outlineMesh.renderOrder = 999;
   part.add(outlineMesh);
   deskOutlineMeshes.push({ mesh: outlineMesh, parent: part });
@@ -1768,7 +2231,6 @@ deskParts.forEach((part) => {
   outlineMesh.userData.currentOpacity = 0;
 });
 
-// Create outlines for frame mode objects (IMPROVED BRIGHT CYAN)
 frameParts.forEach((part) => {
   part.userData.originalScale = part.userData.originalScale || part.scale.clone();
   const outlineGeo = part.geometry.clone();
@@ -1779,12 +2241,12 @@ frameParts.forEach((part) => {
     opacity: 0,
     depthWrite: false,
     depthTest: true,
-    polygonOffset: true,      // ← ADD THIS
-    polygonOffsetFactor: -1,  // ← ADD THIS
-    polygonOffsetUnits: -1    // ← ADD THIS
+    polygonOffset: true,      
+    polygonOffsetFactor: -1,  
+    polygonOffsetUnits: -1    
 });
   const outlineMesh = new THREE.Mesh(outlineGeo, outlineMat);
-  outlineMesh.scale.multiplyScalar(1.06); // THICKER
+  outlineMesh.scale.multiplyScalar(1.06); 
   outlineMesh.renderOrder = 999;
   part.add(outlineMesh);
   frameOutlineMeshes.push({ mesh: outlineMesh, parent: part });
@@ -1795,7 +2257,6 @@ frameParts.forEach((part) => {
 
 // Create outlines for board mode objects (only board1 and board2)
 boardParts.forEach((part) => {
-  // Only create outlines for board1 and board2
   if (part.name !== 'board1' && part.name !== 'board2') return;
   
   part.userData.originalScale = part.userData.originalScale || part.scale.clone();
@@ -1848,7 +2309,7 @@ tvParts.forEach((part) => {
 
     const outlineMesh = new THREE.Mesh(outlineGeo, outlineMat);
     outlineMesh.position.z = -0.005; // Slightly behind screen
-    outlineMesh.renderOrder = 998; // Render before screen
+    outlineMesh.renderOrder = 998;
     
     part.add(outlineMesh);
     tvOutlineMeshes.push({ mesh: outlineMesh, parent: part });
@@ -1884,7 +2345,56 @@ tvParts.forEach((part) => {
   }
 });
 
-// Create outlines for family frames (IMPROVED)
+// Create outlines for shelf mode objects
+shelfParts.forEach((part) => {
+  part.userData.originalScale = part.userData.originalScale || part.scale.clone();
+  const outlineGeo = part.geometry.clone();
+  const outlineMat = new THREE.MeshBasicMaterial({
+    color: 0x00ffff,
+    side: THREE.BackSide,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    depthTest: true,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1
+  });
+  const outlineMesh = new THREE.Mesh(outlineGeo, outlineMat);
+  outlineMesh.scale.multiplyScalar(1.05);
+  outlineMesh.renderOrder = 999;
+  part.add(outlineMesh);
+  shelfOutlineMeshes.push({ mesh: outlineMesh, parent: part });
+  outlineMesh.visible = false;
+  outlineMesh.userData.targetOpacity = 0;
+  outlineMesh.userData.currentOpacity = 0;
+});
+
+// Create outlines for radio object
+radioParts.forEach((part) => {
+  part.userData.originalScale = part.userData.originalScale || part.scale.clone();
+  const outlineGeo = part.geometry.clone();
+  const outlineMat = new THREE.MeshBasicMaterial({
+    color: 0x00ffff,
+    side: THREE.BackSide,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    depthTest: true,
+    polygonOffset: true,
+    polygonOffsetFactor: -1,
+    polygonOffsetUnits: -1
+  });
+  const outlineMesh = new THREE.Mesh(outlineGeo, outlineMat);
+  outlineMesh.scale.multiplyScalar(1.15);
+  outlineMesh.renderOrder = 999;
+  part.add(outlineMesh);
+  radioOutlineMeshes.push({ mesh: outlineMesh, parent: part });
+  outlineMesh.visible = false;
+  outlineMesh.userData.targetOpacity = 0;
+  outlineMesh.userData.currentOpacity = 0;
+});
+
 familyFrameParts.forEach((part) => {
   const outlineGeo = part.geometry.clone();
   const outlineMat = new THREE.MeshBasicMaterial({
@@ -1894,12 +2404,12 @@ familyFrameParts.forEach((part) => {
     opacity: 0,
     depthWrite: false,
     depthTest: true,
-    polygonOffset: true,      // ← ADD THIS
-    polygonOffsetFactor: -1,  // ← ADD THIS
-    polygonOffsetUnits: -1    // ← ADD THIS
+    polygonOffset: true,      
+    polygonOffsetFactor: -1,  
+    polygonOffsetUnits: -1    
 });
   const outlineMesh = new THREE.Mesh(outlineGeo, outlineMat);
-  outlineMesh.scale.multiplyScalar(1.05); // THICKER
+  outlineMesh.scale.multiplyScalar(1.05); 
   outlineMesh.renderOrder = 999;
   part.add(outlineMesh);
   familyOutlineMeshes.push({ mesh: outlineMesh, parent: part });
@@ -1908,7 +2418,6 @@ familyFrameParts.forEach((part) => {
   outlineMesh.userData.currentOpacity = 0;
 });
 
-// Create outline for chess board (FIXED - FULL BOARD SIZE)
 if (chessBoard) {
   const outlineGeo = chessBoard.geometry.clone();
   const outlineMat = new THREE.MeshBasicMaterial({
@@ -1924,8 +2433,6 @@ if (chessBoard) {
   });
   const outlineMesh = new THREE.Mesh(outlineGeo, outlineMat);
   
-  // CRITICAL FIX: Don't multiply by board scale, use direct multiplier only
-  // Chess board scale is already applied to geometry, so we just make it slightly bigger
   outlineMesh.scale.set(1.08, 1.08, 1.08); // Simple uniform scale
   
   outlineMesh.position.y += 0.008; // RAISE HIGHER
@@ -2004,7 +2511,7 @@ function onPointerMove(event) {
   
   raycaster.setFromCamera(mouse, camera);
   
-// Normal mode - hover over laptop, sofa, desk, and board objects (WITH SMOOTH ANIMATION)
+// Normal mode - hover over laptop, sofa, desk, and board objects
 if (currentMode === 'normal') {
   if (!hoverEnabled) return;
   
@@ -2015,6 +2522,7 @@ if (currentMode === 'normal') {
   const hoveringDesk = hits.some(h => deskParts.includes(h.object));
   const hoveringBoard = hits.some(h => boardParts.includes(h.object));
   const hoveringTV = hits.some(h => tvParts.includes(h.object));
+  const hoveringShelf = hits.some(h => shelfParts.includes(h.object));
   
   outlineMeshes.forEach(o => {
     o.visible = true;
@@ -2036,9 +2544,13 @@ if (currentMode === 'normal') {
     item.mesh.visible = true;
     item.mesh.userData.targetOpacity = hoveringTV ? 0.9 : 0;
   });
+  shelfOutlineMeshes.forEach(item => {
+    item.mesh.visible = true;
+    item.mesh.userData.targetOpacity = hoveringShelf ? 0.9 : 0;
+  });
 }
   
-  // Sofa mode - hover over chess board and family frames (WITH SMOOTH ANIMATION)
+  // Sofa mode - hover over chess board and family frames 
 else if (currentMode === 'sofa') {
   if (!hoverEnabled) return;
   
@@ -2053,6 +2565,7 @@ else if (currentMode === 'sofa') {
     return false;
   });
   
+
   const hoveringFamily = hits.some(h => familyFrameParts.includes(h.object));
   
   chessOutlineMeshes.forEach(o => {
@@ -2064,8 +2577,20 @@ else if (currentMode === 'sofa') {
     item.mesh.userData.targetOpacity = hoveringFamily ? 0.9 : 0;
   });
 }
+
+// Shelf mode - hover over radio
+else if (currentMode === 'shelf') {
+  if (!hoverEnabled) return;
   
-// Desk mode - hover over laptop and frames (WITH SMOOTH ANIMATION)
+  const hits = raycaster.intersectObjects(selectable, true);
+  const hoveringRadio = hits.some(h => radioParts.includes(h.object));
+  
+  radioOutlineMeshes.forEach(item => {
+    item.mesh.visible = true;
+    item.mesh.userData.targetOpacity = hoveringRadio ? 0.9 : 0;
+  });
+}
+// Desk mode - hover over laptop and frames 
 else if (currentMode === 'desk') {
   if (!hoverEnabled) return;
   
@@ -2125,6 +2650,7 @@ if (currentMode === 'normal') {
   const clickedDesk = hits.find(h => deskParts.includes(h.object));
   const clickedBoard = hits.find(h => boardParts.includes(h.object));
   const clickedTV = hits.find(h => tvParts.includes(h.object));
+  const clickedShelf = hits.find(h => shelfParts.includes(h.object));
   
   if (clickedSofa) {
     console.log('Entering SOFA mode');
@@ -2138,6 +2664,9 @@ if (currentMode === 'normal') {
   } else if (clickedTV) {
     console.log('Entering TV mode');
     enterTVMode();
+  } else if (clickedShelf) {
+    console.log('Entering SHELF mode');
+    enterShelfMode();
   }
 }
 
@@ -2163,6 +2692,17 @@ if (currentMode === 'normal') {
     }
   }
   
+  // Shelf mode - can click radio
+else if (currentMode === 'shelf') {
+  const clickedRadio = hits.find(h => radioParts.includes(h.object));
+  
+  if (clickedRadio) {
+    console.log('Entering RADIO mode from shelf');
+    showRadioPanel();
+    radioOutlineMeshes.forEach(item => (item.mesh.visible = false));
+  }
+}
+
   // Desk mode - can click laptop or frames
   else if (currentMode === 'desk') {
     const clickedLaptop = hits.find(h => laptopParts.includes(h.object));
@@ -2214,7 +2754,7 @@ if (laptopHint) laptopHint.style.display = 'none';
     -4.0128, 1.1213, 1.0702,
     -4.8249, 1.0837, 0.6311
   );
-  
+  if (window.audioManager) window.audioManager.updateForMode('laptop');
   // Show dialogue after animation
   setTimeout(() => {
     showModeDialogue('laptop');
@@ -2240,7 +2780,7 @@ function enterSofaMode() {
     -2.0817795986579544, 1.002890579523843, 1.326450881697992,
     -2.08570808037242, 0.985057465166684, 2.3500947571065485
   );
-  
+  if (window.audioManager) window.audioManager.updateForMode('sofa');
   // Show dialogue after camera animation
   setTimeout(() => {
     showModeDialogue('sofa');
@@ -2268,7 +2808,7 @@ function enterChessMode() {
     -1.8996698124012572, 0.7098220507034887, 2.6055384244448687,
     -1.9347355354125648, 0.6560897143493751, 2.605015467376186
   );
-  
+  if (window.audioManager) window.audioManager.updateForMode('chess');
   // Show dialogue after camera animation
   setTimeout(() => {
     showModeDialogue('chess');
@@ -2295,7 +2835,7 @@ function enterFamilyMode() {
     -2.0828301115624637, 1.5957608975876931, 2.488499381626821,
     -2.0867611244597835, 1.585668276781064, 3.5122488249675508
   );
-  
+  if (window.audioManager) window.audioManager.updateForMode('family');
   // Show dialogue after camera animation
   setTimeout(() => {
     showModeDialogue('family');
@@ -2321,7 +2861,7 @@ function enterDeskMode() {
     -3.2778681575996984, 1.258073897524341, 1.1635086207775198,
     -4.972655773234403, 1.0606562348962882, 1.0511241695012494
   );
-  
+  if (window.audioManager) window.audioManager.updateForMode('desk');
   // Show dialogue after camera animation
   setTimeout(() => {
     showModeDialogue('desk');
@@ -2348,7 +2888,7 @@ function enterFrameMode() {
     -4.190787687432334, 1.1577778797148508, 1.699200132516048,
     -4.668236173654875, 0.9293795081269588, 1.9420963955123245
   );
-  
+  if (window.audioManager) window.audioManager.updateForMode('frame');
   // Show dialogue after camera animation
   setTimeout(() => {
     showModeDialogue('frame');
@@ -2368,9 +2908,8 @@ function enterBoardMode() {
   controls.enableZoom = false;
   
   showExitButton();
-  
+  if (window.audioManager) window.audioManager.updateForMode('board');
   // DON'T start block animation yet - wait for camera to finish
-  
   animateCameraTo(
     -4.274350092309905, 1.5743882076196263, 2.711131867410986,
     -7.130103486312447, 1.5894207255690969, 2.7379573381311144
@@ -2378,7 +2917,7 @@ function enterBoardMode() {
   
    setTimeout(() => {
     showCertificateBoard();
-  }, 3500); // Wait for camera (2.2s) + block animation (~1.3s)
+  }, 3500);
   
   console.log("📋 Entered board mode");
 }
@@ -2400,20 +2939,18 @@ function enterTVMode() {
     -1.3944157496967235, 1.2781273683184076, 0.08927901029766028,
     -1.3981622231195188, 1.276980057445429, -0.4099905446231163
   );
-  
+  if (window.audioManager) window.audioManager.updateForMode('tv');
   // Show dialogue after camera animation
   setTimeout(() => {
     showModeDialogue('tv');
   }, 2500);
   
-  // CRITICAL: Log TV screen state for debugging
-  console.log("📺 Entered TV mode");
   if (tvScreenMesh) {
     console.log("TV screen mesh found:", tvScreenMesh.name);
     console.log("TV screen visible:", tvScreenMesh.visible);
     console.log("TV screen material:", tvScreenMesh.material?.type);
   } else {
-    console.error("❌ TV screen mesh is NULL!");
+    console.error("TV screen mesh is NULL!");
   }
 }
 
@@ -2516,7 +3053,7 @@ async function makeAIMove() {
       }, captureDelay);
     }
   } catch (error) {
-    console.error('❌ AI move error:', error);
+    console.error('AI move error:', error);
     chessGame.aiThinking = false;
     updateChessUI();
   }
@@ -2525,7 +3062,6 @@ async function makeAIMove() {
 function animate() {
   requestAnimationFrame(animate);
   
-  // Handle camera animation first (before controls update)
   if (isCameraAnimating) {
     const elapsed = performance.now() / 1000 - animationStart;
     const t = Math.min(elapsed / animationDuration, 1);
@@ -2600,40 +3136,39 @@ function animate() {
           block.animating = true;
         });
         
-       console.log("📋 Board mode activated - camera locked, starting block rotation with audio"); 
       } else if (currentMode === 'tv') {
         controls.enabled = false;
         lockedCameraPos.copy(camera.position);
         lockedCameraTarget.copy(controls.target);
         hoverEnabled = false;
         
-        // Activate TV screen
         if (tvScreen) {
           tvScreen.activate();
         }
         
         console.log("📺 TV mode activated - camera locked, console OS ready");
-      }
-      else if (currentMode === 'normal') {
+      } else if (currentMode === 'shelf') {
+      controls.enabled = false;
+      lockedCameraPos.copy(camera.position);
+      lockedCameraTarget.copy(controls.target);
+      hoverEnabled = false;
+      console.log("📚 Shelf mode activated - camera locked at position 0");
+      }else if (currentMode === 'normal') {
         controls.enabled = true;
         hoverEnabled = true;
         console.log("🔄 Returned to normal mode");
       }
     }
   }
-  // Only update controls if in normal mode and not animating
   else if (currentMode === 'normal') {
     controls.update();
   }
-  // Lock camera in all non-normal modes (prevent any drift)
-  else if (currentMode !== 'normal') {
-    // Gently lock camera to prevent jitter (same as original chess mode)
+  else if (currentMode !== 'normal' && currentMode !== 'shelf') {
     camera.position.lerp(lockedCameraPos, 0.05);
     controls.target.lerp(lockedCameraTarget, 0.05);
     controls.update();
   }
   
-  // Handle chess board scale (only in normal mode for hover effect)
   if (currentMode === 'normal') {
     chessCurrentScale += (chessTargetScale - chessCurrentScale) * 0.08;
     chessPieces.forEach(piece => {
@@ -2645,7 +3180,6 @@ function animate() {
       );
     });
   } else {
-    // Reset scale in other modes
     chessPieces.forEach(piece => {
       const origScale = piece.userData.originalScale;
       piece.scale.copy(origScale);
@@ -2679,7 +3213,7 @@ function animate() {
       const diff = targetRot - block.current;
       
       // Use different speeds for enter vs exit
-      const speed = block.exitAnimationSpeed || 0.045; // Slower for enter (0.045), faster for exit (0.15)
+      const speed = block.exitAnimationSpeed || 0.045; 
       
       if (Math.abs(diff) > 0.001) {
         allComplete = false;
@@ -2709,6 +3243,9 @@ function animate() {
     tvScreen.update();
   }
   
+  if (currentMode === 'shelf') {
+    updateShelfCamera();
+  }
 const animateOutlines = (outlineArray) => {
     outlineArray.forEach(item => {
       const outline = item.mesh || item;
@@ -2733,6 +3270,8 @@ const animateOutlines = (outlineArray) => {
   animateOutlines(chessOutlineMeshes);
   animateOutlines(boardOutlineMeshes);
   animateOutlines(tvOutlineMeshes);
+  animateOutlines(shelfOutlineMeshes);
+  animateOutlines(radioOutlineMeshes);
   
   if (laptopScreen && currentMode === 'laptop') {
     laptopScreen.update();

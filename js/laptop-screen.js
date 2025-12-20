@@ -344,7 +344,6 @@ this.permissionMessageTimer = 0;
     this.onClick = (event) => {
       if (!this.isActive || !this.camera) return;
       
-      // CHECK: If clicking dialogue box, don't interact with screen
       const dialogueBox = document.getElementById('dialogueBox');
       if (dialogueBox && dialogueBox.style.display !== 'none') {
         const rect = dialogueBox.getBoundingClientRect();
@@ -778,7 +777,6 @@ if (this.showPermissionMessage) {
     
     ctx.drawImage(this.staticElementsCache, 0, 0);
     
-    // BIGGER TASKBAR
     ctx.fillStyle = 'rgba(10, 5, 15, 0.97)';
     ctx.fillRect(0, 0, w, 100);
     
@@ -791,7 +789,6 @@ if (this.showPermissionMessage) {
     ctx.fillStyle = accentGrad;
     ctx.fillRect(0, 0, w, 4);
     
-    // BIGGER START BUTTON
     const startGrad = ctx.createLinearGradient(20, 10, 100, 90);
     startGrad.addColorStop(0, '#e63946');
     startGrad.addColorStop(0.5, '#c1121f');
@@ -807,7 +804,6 @@ if (this.showPermissionMessage) {
     ctx.textBaseline = 'middle';
     ctx.fillText('⌂', 60, 50);
     
-    // BIGGER APP ICONS
     const icons = [
       { emoji: '📁', label: 'Files' },
       { emoji: '👤', label: 'About' },
@@ -853,7 +849,6 @@ if (this.showPermissionMessage) {
       ctx.restore();
     });
     
-    // BIGGER MINIMIZED WINDOWS IN TASKBAR
     let minIconX = 700;
     for (let [name, win] of Object.entries(this.windows)) {
       if (win.minimized) {
@@ -884,11 +879,10 @@ if (this.showPermissionMessage) {
       }
     }
     
-    // BIGGER SYSTEM TRAY
     ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
     ctx.font = '32px Arial';
     ctx.textAlign = 'center';
-// Move tray icons farther left to prevent overlap with clock
+
 ctx.fillText('🔊', w - 275, 52);
 ctx.fillText('📶', w - 225, 52);
 ctx.fillText('🔋', w - 175, 52);
@@ -1041,7 +1035,6 @@ ctx.fillText('🔋', w - 175, 52);
     ctx.font = 'bold 30px Arial';
     ctx.fillText(win.title, win.x + 30, win.y + 55);
     
-    // BIGGER MINIMIZE BUTTON
     const isMinHovered = this.hoveredMinimizeBtn === name;
     const minX = win.x + win.w - 230;
     const minY = win.y + 15;
@@ -1119,7 +1112,6 @@ ctx.fillText('🔋', w - 175, 52);
     
     this.drawWindowContent(ctx, name, win);
     
-    // Draw scroll bar if content is scrollable
 if (win.maxScrollY > 0) {
   const scrollBarX = win.x + win.w - 25;
   const scrollBarY = win.y + 100;
@@ -1181,7 +1173,7 @@ if (win.maxScrollY > 0) {
       
     } else if (name === 'about') {
       // Calculate scroll height
-      const totalHeight = 290 + 60 + 9 * 50; // profile card + spacing + 9 lines of text
+      const totalHeight = 290 + 60 + 9 * 50;
       const visibleHeight = win.h - 140;
       win.maxScrollY = Math.max(0, totalHeight - visibleHeight);
 

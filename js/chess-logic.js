@@ -3,7 +3,6 @@ console.log("♟️ Chess Logic Module Loading...");
 
 class ChessGame {
   constructor() {
-    // EXACT mapping from your 3D model to chess squares
     this.pieceNameMap = {
       // White pieces (bottom rows from player perspective)
       'White_rook1': { type: 'R', square: 'h1', color: 'white' },

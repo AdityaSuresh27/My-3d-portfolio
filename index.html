@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="stylesheet" href="./css/chess-style.css" />
     <link rel="stylesheet" href="./css/laptop-mode.css" />
+    <link rel="stylesheet" href="css/audio-panel.css">
   </head>
   <body>
     <div id="loading">Loading...</div>
@@ -53,7 +54,6 @@
     <!-- Control Panel -->
     <div id="chessControls">
       <button class="chess-btn danger" id="resetBtn">🔄 Reset</button>
-      <button class="chess-btn secondary" id="exitBtn">✕ Exit</button>
     </div>
     
     <!-- Move Indicator -->
@@ -65,7 +65,6 @@
       <p id="gameOverMessage">Checkmate!</p>
       <div class="chess-buttons">
         <button class="chess-btn primary" id="playAgainBtn">🔄 Play Again</button>
-        <button class="chess-btn secondary" id="exitGameBtn">✕ Exit</button>
       </div>
     </div>
 
@@ -99,5 +98,6 @@
     <script type="module" src="./js/main.js"></script>
     <script src="./js/tv-screen.js"></script>
     <script src="./js/laptop-screen.js"></script>
+    <script src="./js/AudioManager.js"></script>
   </body>
 </html>
