@@ -87,17 +87,17 @@ class AudioManager {
       // Mute in TV mode
       this.audio.volume = 0;
       this.isDimmed = true;
-      console.log('🔇 Music muted for mode:', mode);
+      console.log('Music muted for mode:', mode);
     } else if (this.fullVolumeModes.includes(mode)) {
       // Full volume in normal, shelf, board, sofa, family, frame modes
       this.audio.volume = this.baseVolume;
       this.isDimmed = false;
-      console.log('🔊 Music full volume for mode:', mode);
+      console.log('Music full volume for mode:', mode);
     } else if (this.dimmedModes.includes(mode)) {
       // Dimmed in desk, laptop, chess modes
       this.audio.volume = this.dimmedVolume;
       this.isDimmed = true;
-      console.log('🔉 Music dimmed for mode:', mode);
+      console.log('Music dimmed for mode:', mode);
     }
   }
   

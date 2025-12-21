@@ -652,6 +652,23 @@ function playBoardAudio(audioFile) {
 }
 
 function setupRadioPanel() {
+  // Create backdrop overlay
+  const radioBackdrop = document.createElement('div');
+  radioBackdrop.id = 'radioBackdrop';
+  radioBackdrop.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+  `;
+  document.body.appendChild(radioBackdrop);
   radioPanel = document.createElement('div');
   radioPanel.id = 'radioPanel';
   
@@ -822,6 +839,22 @@ function updateTrackDisplay() {
 function showRadioPanel() {
   if (!radioPanel) return;
   
+  // Block shelf scrolling and all interactions
+  const backdrop = document.getElementById('radioBackdrop');
+  if (backdrop) {
+    backdrop.style.opacity = '1';
+    backdrop.style.pointerEvents = 'auto';
+  }
+  
+  // Disable shelf scrolling
+  window.removeEventListener('wheel', onMouseWheel);
+  window.removeEventListener('keydown', onKeyDown);
+  
+  // Hide universal exit button temporarily
+  const exitBtn = document.getElementById('universalExitBtn');
+  if (exitBtn) exitBtn.style.pointerEvents = 'none';
+  
+  radioPanel.style.zIndex = '10001'; // Above backdrop
   radioPanel.classList.add('active');
   
   // Update displays
@@ -836,15 +869,30 @@ function showRadioPanel() {
     }
   }
   
-  console.log('📻 Radio panel opened');
+  console.log('📻 Radio panel opened - interactions blocked');
 }
 
 function hideRadioPanel() {
   if (!radioPanel) return;
   
+  // Hide backdrop
+  const backdrop = document.getElementById('radioBackdrop');
+  if (backdrop) {
+    backdrop.style.opacity = '0';
+    backdrop.style.pointerEvents = 'none';
+  }
+  
+  // Re-enable shelf scrolling
+  window.addEventListener('wheel', onMouseWheel, { passive: false });
+  window.addEventListener('keydown', onKeyDown);
+  
+  // Re-enable universal exit button
+  const exitBtn = document.getElementById('universalExitBtn');
+  if (exitBtn) exitBtn.style.pointerEvents = 'auto';
+  
   radioPanel.classList.remove('active');
   
-  console.log('📻 Radio panel closed');
+  console.log('📻 Radio panel closed - interactions restored');
 }
 
 function showIntroDialogue() {
@@ -1370,7 +1418,9 @@ function enterShelfMode() {
   
   currentShelfPosition = 0;
   targetShelfPosition = 0;
-  
+  if (dialogueBox) {
+    delete dialogueBox.dataset.currentShelfPosition;
+  }
   // Lock camera
   controls.enabled = false;
   controls.enablePan = false;
@@ -2361,7 +2411,7 @@ shelfParts.forEach((part) => {
     polygonOffsetUnits: -1
   });
   const outlineMesh = new THREE.Mesh(outlineGeo, outlineMat);
-  outlineMesh.scale.multiplyScalar(1.05);
+  outlineMesh.scale.multiplyScalar(1.07);
   outlineMesh.renderOrder = 999;
   part.add(outlineMesh);
   shelfOutlineMeshes.push({ mesh: outlineMesh, parent: part });
@@ -2376,23 +2426,22 @@ radioParts.forEach((part) => {
   const outlineGeo = part.geometry.clone();
   const outlineMat = new THREE.MeshBasicMaterial({
     color: 0x00ffff,
-    side: THREE.BackSide,
+    side: THREE.DoubleSide,
     transparent: true,
     opacity: 0,
     depthWrite: false,
-    depthTest: true,
-    polygonOffset: true,
-    polygonOffsetFactor: -1,
-    polygonOffsetUnits: -1
+    depthTest: false,
+    polygonOffset: false
   });
   const outlineMesh = new THREE.Mesh(outlineGeo, outlineMat);
-  outlineMesh.scale.multiplyScalar(1.15);
-  outlineMesh.renderOrder = 999;
+  outlineMesh.scale.multiplyScalar(1.01);
+  outlineMesh.renderOrder = 1001;
   part.add(outlineMesh);
   radioOutlineMeshes.push({ mesh: outlineMesh, parent: part });
   outlineMesh.visible = false;
   outlineMesh.userData.targetOpacity = 0;
   outlineMesh.userData.currentOpacity = 0;
+  outlineMesh.userData.maxOpacity = 0.35; // NEW: Lower max opacity for subtle effect
 });
 
 familyFrameParts.forEach((part) => {
@@ -2583,13 +2632,37 @@ else if (currentMode === 'shelf') {
   if (!hoverEnabled) return;
   
   const hits = raycaster.intersectObjects(selectable, true);
-  const hoveringRadio = hits.some(h => radioParts.includes(h.object));
   
-  radioOutlineMeshes.forEach(item => {
+  // DEBUG: Log what we're hitting
+  if (hits.length > 0) {
+    console.log('🎯 Hovering over:', hits[0].object.name);
+  }
+  
+  // Check if hovering over radio - check the object itself AND its parent
+  const hoveringRadio = hits.some(h => {
+    // Check if the object itself is a radio part
+    if (radioParts.includes(h.object)) return true;
+    
+    // Check if the parent is a radio part
+    if (h.object.parent && radioParts.includes(h.object.parent)) return true;
+    
+    // Check if the name contains 'radio'
+    if (h.object.name && h.object.name.toLowerCase().includes('radio')) return true;
+    
+    return false;
+  });
+  
+  if (hoveringRadio) {
+    console.log('📻 HOVERING OVER RADIO - Showing outline!');
+  }
+  
+radioOutlineMeshes.forEach(item => {
     item.mesh.visible = true;
-    item.mesh.userData.targetOpacity = hoveringRadio ? 0.9 : 0;
+    const maxOpacity = item.mesh.userData.maxOpacity || 0.35;
+    item.mesh.userData.targetOpacity = hoveringRadio ? maxOpacity : 0;
   });
 }
+
 // Desk mode - hover over laptop and frames 
 else if (currentMode === 'desk') {
   if (!hoverEnabled) return;
@@ -3151,7 +3224,7 @@ function animate() {
       controls.enabled = false;
       lockedCameraPos.copy(camera.position);
       lockedCameraTarget.copy(controls.target);
-      hoverEnabled = false;
+      hoverEnabled = true;
       console.log("📚 Shelf mode activated - camera locked at position 0");
       }else if (currentMode === 'normal') {
         controls.enabled = true;

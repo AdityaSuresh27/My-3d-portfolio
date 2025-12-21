@@ -1,26 +1,82 @@
-/* css/audio-panel.css - Vintage Radio Panel Styling */
+/* css/audio-panel.css */
 
 #radioPanel {
   position: fixed;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%) scale(0.9);
-  width: 600px;
-  height: 400px;
-  background: linear-gradient(145deg, #3a3a2a 0%, #2d2d1f 100%);
-  border: 8px solid #1a1a12;
-  border-radius: 25px;
-  padding: 40px;
+  width: 700px;
+  height: 500px;
+  background: linear-gradient(145deg, 
+    rgba(80, 30, 25, 0.98) 0%, 
+    rgba(60, 25, 20, 0.98) 50%, 
+    rgba(70, 28, 22, 0.98) 100%);
+  border: 12px solid;
+  border-image: linear-gradient(135deg, 
+    rgba(180, 140, 70, 1) 0%,
+    rgba(212, 175, 100, 1) 20%,
+    rgba(100, 70, 40, 1) 40%,
+    rgba(212, 175, 100, 1) 60%,
+    rgba(100, 70, 40, 1) 80%,
+    rgba(180, 140, 70, 1) 100%) 1;
+  border-radius: 15px;
+  padding: 40px 50px;
   z-index: 10001;
   opacity: 0;
   pointer-events: none;
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 
-    0 30px 90px rgba(0, 0, 0, 0.95),
-    inset 0 2px 20px rgba(0, 0, 0, 0.5),
-    inset 0 -2px 10px rgba(255, 255, 255, 0.05),
-    0 0 60px rgba(139, 69, 19, 0.3);
+    0 40px 120px rgba(0, 0, 0, 0.95),
+    inset 0 8px 40px rgba(0, 0, 0, 0.8),
+    inset 0 0 100px rgba(60, 25, 20, 0.7),
+    0 0 80px rgba(212, 175, 100, 0.3);
   user-select: none;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* Corner metal brackets - top left */
+#radioPanel::before {
+  content: '';
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  top: -12px;
+  left: -12px;
+  background: linear-gradient(135deg, 
+    rgba(212, 175, 100, 1) 0%,
+    rgba(180, 140, 70, 1) 50%,
+    rgba(100, 70, 40, 1) 100%);
+  clip-path: polygon(
+    0 0, 100% 0, 100% 25%, 25% 25%, 25% 100%, 0 100%
+  );
+  z-index: 10;
+  box-shadow: 
+    inset 2px 2px 5px rgba(255, 255, 255, 0.3),
+    inset -2px -2px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Corner metal brackets - top right */
+#radioPanel::after {
+  content: '';
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  top: -12px;
+  right: -12px;
+  background: linear-gradient(135deg, 
+    rgba(212, 175, 100, 1) 0%,
+    rgba(180, 140, 70, 1) 50%,
+    rgba(100, 70, 40, 1) 100%);
+  clip-path: polygon(
+    0 0, 100% 0, 100% 100%, 75% 100%, 75% 25%, 0 25%
+  );
+  z-index: 10;
+  box-shadow: 
+    inset 2px 2px 5px rgba(255, 255, 255, 0.3),
+    inset -2px -2px 5px rgba(0, 0, 0, 0.5);
 }
 
 #radioPanel.active {
@@ -31,227 +87,344 @@
 
 .radio-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
   font-family: 'Courier New', monospace;
-  color: #d4af37;
-  text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+  flex-shrink: 0;
+  position: relative;
 }
+
+/* Diagonal stripes in corners */
+.corner-stripe {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(212, 175, 100, 1) 0px,
+    rgba(212, 175, 100, 1) 10px,
+    rgba(40, 20, 15, 1) 10px,
+    rgba(40, 20, 15, 1) 20px
+  );
+  z-index: 11;
+}
+
+.corner-stripe.top-left { top: 8px; left: 8px; clip-path: polygon(0 0, 100% 0, 0 100%); }
+.corner-stripe.top-right { top: 8px; right: 8px; clip-path: polygon(100% 0, 100% 100%, 0 0); }
+.corner-stripe.bottom-left { bottom: 8px; left: 8px; clip-path: polygon(0 0, 0 100%, 100% 100%); }
+.corner-stripe.bottom-right { bottom: 8px; right: 8px; clip-path: polygon(100% 0, 100% 100%, 0 100%); }
 
 .radio-header h2 {
   margin: 0 0 5px 0;
-  font-size: 32px;
-  font-weight: bold;
-  letter-spacing: 3px;
+  font-size: 48px;
+  font-weight: 900;
+  letter-spacing: 12px;
   text-transform: uppercase;
+  background: linear-gradient(135deg, 
+    rgba(212, 175, 100, 1) 0%,
+    rgba(255, 220, 150, 1) 30%,
+    rgba(180, 140, 70, 1) 50%,
+    rgba(255, 220, 150, 1) 70%,
+    rgba(212, 175, 100, 1) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.8));
 }
 
 .radio-header .subtitle {
-  font-size: 12px;
-  color: #8b6914;
-  letter-spacing: 2px;
-}
-
-.radio-controls {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  margin-top: 40px;
-}
-
-/* Knob Container */
-.knob-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-}
-
-.knob-label {
-  font-family: 'Courier New', monospace;
-  font-size: 14px;
-  color: #d4af37;
+  font-size: 13px;
+  color: rgba(212, 175, 100, 1);
+  letter-spacing: 6px;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  text-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
+  font-weight: 500;
 }
 
-/* 3D Knob Styling */
-.radio-knob {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #4a4a3a, #2a2a1a);
-  border: 5px solid #1a1a12;
-  box-shadow: 
-    0 8px 20px rgba(0, 0, 0, 0.8),
-    inset 0 -3px 10px rgba(0, 0, 0, 0.7),
-    inset 0 3px 10px rgba(255, 255, 255, 0.1);
-  cursor: grab;
-  position: relative;
-  transition: transform 0.1s ease;
-}
-
-.radio-knob:active {
-  cursor: grabbing;
-  transform: scale(0.98);
-}
-
-.radio-knob:hover {
-  box-shadow: 
-    0 8px 25px rgba(212, 175, 55, 0.4),
-    inset 0 -3px 10px rgba(0, 0, 0, 0.7),
-    inset 0 3px 10px rgba(255, 255, 255, 0.1);
-}
-
-/* Knob Pointer */
-.knob-pointer {
-  position: absolute;
-  width: 4px;
-  height: 35px;
-  background: linear-gradient(180deg, #d4af37 0%, #8b6914 100%);
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-radius: 2px;
-  box-shadow: 0 0 5px rgba(212, 175, 55, 0.8);
-  pointer-events: none;
-}
-
-/* Center dot on knob */
-.knob-center {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  background: radial-gradient(circle, #d4af37, #8b6914);
-  border-radius: 50%;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  box-shadow: 
-    0 2px 5px rgba(0, 0, 0, 0.8),
-    inset 0 1px 2px rgba(255, 255, 255, 0.3);
-}
-
-/* Button Container */
-.button-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  align-items: center;
-}
-
-/* 3D Buttons */
-.radio-button {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #3a3a2a, #1a1a12);
-  border: 4px solid #0a0a08;
-  box-shadow: 
-    0 6px 15px rgba(0, 0, 0, 0.9),
-    inset 0 -2px 8px rgba(0, 0, 0, 0.8),
-    inset 0 2px 8px rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  color: #d4af37;
-  text-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
-}
-
-.radio-button:hover {
-  box-shadow: 
-    0 6px 20px rgba(212, 175, 55, 0.4),
-    inset 0 -2px 8px rgba(0, 0, 0, 0.8),
-    inset 0 2px 8px rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
-}
-
-.radio-button:active {
-  transform: translateY(1px) scale(0.95);
-  box-shadow: 
-    0 3px 10px rgba(0, 0, 0, 0.9),
-    inset 0 2px 8px rgba(0, 0, 0, 0.9),
-    inset 0 -2px 8px rgba(255, 255, 255, 0.05);
-}
-
-/* Power Button Special Styling */
-.radio-button.power-btn {
-  background: radial-gradient(circle at 30% 30%, #4a2a2a, #2a1a1a);
-}
-
-.radio-button.power-btn.active {
-  background: radial-gradient(circle at 30% 30%, #5a3a2a, #3a2a1a);
-  box-shadow: 
-    0 6px 15px rgba(212, 175, 55, 0.6),
-    inset 0 0 15px rgba(212, 175, 55, 0.3);
-  color: #ffcc00;
-}
-
-/* Track Display */
 .track-display {
-  background: linear-gradient(145deg, #1a1a12 0%, #0a0a08 100%);
-  border: 3px solid #2a2a1a;
-  border-radius: 10px;
-  padding: 15px 25px;
-  margin: 25px 0;
+  background: linear-gradient(145deg, rgba(15, 12, 10, 1) 0%, rgba(8, 6, 5, 1) 100%);
+  border: 8px solid transparent;
+  border-image: linear-gradient(135deg, rgba(180, 140, 70, 1) 0%, rgba(212, 175, 100, 1) 50%, rgba(180, 140, 70, 1) 100%) 1;
+  border-radius: 25px;
+  padding: 20px 30px;
   text-align: center;
-  box-shadow: 
-    inset 0 3px 10px rgba(0, 0, 0, 0.9),
-    0 2px 5px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 6px 20px rgba(0,0,0,0.95), 0 4px 10px rgba(0,0,0,0.8);
+  margin-bottom: 35px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.track-display::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.3) 1px, rgba(0,0,0,0.3) 2px),
+    repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(0,0,0,0.3) 1px, rgba(0,0,0,0.3) 2px);
+  background-size: 3px 3px;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.track-display::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  right: 15px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(212,175,100,0.3) 10%, rgba(212,175,100,0.3) 90%, transparent 100%);
+  transform: translateY(-50%);
+  z-index: 0;
 }
 
 .track-name {
   font-family: 'Courier New', monospace;
-  font-size: 20px;
-  color: #d4af37;
-  text-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
+  font-size: 28px;
+  font-weight: bold;
+  background: linear-gradient(90deg, rgba(212,175,100,1) 0%, rgba(255,220,150,1) 50%, rgba(212,175,100,1) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 4px;
+  animation: trackGlow 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px rgba(212,175,100,0.6));
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes trackGlow { 0%,100%{opacity:0.85} 50%{opacity:1} }
+
+/* hide only the tune knob if you mark it with .tune-knob */
+.knob-container.tune-knob {
+  display: none !important;
+}
+
+/* ensure the volume knob is visible if marked explicitly */
+.knob-container.volume-knob {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  flex: 1;
+  min-width: 0;
+}
+
+
+.radio-controls .knob-container:last-of-type {
+  display: none;
+}
+.radio-controls .knob-container:first-of-type {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* keep knob styles (volume) — styles preserved so nothing breaks when visible */
+.knob-label {
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: bold;
+  color: rgba(212, 175, 100, 1);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+}
+
+.radio-knob {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, 
+    rgba(100, 60, 50, 1) 0%, 
+    rgba(70, 40, 35, 1) 35%, 
+    rgba(50, 30, 25, 1) 70%,
+    rgba(30, 18, 15, 1) 100%);
+  border: 6px solid rgba(180, 140, 70, 1);
+  box-shadow: 
+    0 12px 30px rgba(0, 0, 0, 0.95),
+    inset 0 -6px 18px rgba(0, 0, 0, 0.9),
+    inset 0 6px 18px rgba(212, 175, 100, 0.15),
+    0 0 25px rgba(212, 175, 100, 0.2);
+  cursor: grab;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.radio-knob:active { cursor: grabbing; transform: scale(0.97); }
+
+.radio-knob:hover {
+  border-color: rgba(212, 175, 100, 1);
+  box-shadow: 
+    0 12px 35px rgba(212, 175, 100, 0.4),
+    inset 0 -6px 18px rgba(0, 0, 0, 0.9),
+    inset 0 6px 18px rgba(212, 175, 100, 0.25),
+    0 0 35px rgba(212, 175, 100, 0.4);
+}
+
+.knob-pointer {
+  position: absolute;
+  width: 8px;
+  height: 50px;
+  background: linear-gradient(180deg, rgba(255,220,150,1) 0%, rgba(212,175,100,1) 50%, rgba(180,140,70,1) 100%);
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 4px;
+  box-shadow: 0 0 15px rgba(212,175,100,1), 0 0 30px rgba(255,220,150,0.6), inset 0 2px 4px rgba(255,255,255,0.3);
+  pointer-events: none;
+}
+
+.knob-center {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  background: radial-gradient(circle, rgba(255,200,130,1) 0%, rgba(212,175,100,1) 40%, rgba(180,140,70,1) 100%);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.95), inset 0 3px 6px rgba(255,255,255,0.4), 0 0 20px rgba(212,175,100,0.6);
+}
+
+/* radio-controls: moved buttons to the right */
+.radio-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 40px;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Buttons group nudged right */
+.button-container {
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  padding: 0 25px;
+  transform: translateX(30px); /* adjust to move more/less */
+  transition: transform 0.18s ease;
+}
+
+.radio-button {
+  width: 70px;
+  height: 70px;
+  border-radius: 8px;
+  background: linear-gradient(145deg, rgba(80,35,30,1) 0%, rgba(50,25,20,1) 100%);
+  border: 4px solid transparent;
+  border-image: linear-gradient(135deg, rgba(100,70,40,1) 0%, rgba(180,140,70,1) 50%, rgba(100,70,40,1) 100%) 1;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.95), inset 0 -3px 10px rgba(0,0,0,0.9), inset 0 3px 10px rgba(212,175,100,0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: rgba(212,175,100,1);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.radio-button:hover {
+  border-image: linear-gradient(135deg, rgba(180,140,70,1) 0%, rgba(212,175,100,1) 50%, rgba(180,140,70,1) 100%) 1;
+  box-shadow: 0 8px 25px rgba(212,175,100,0.5), inset 0 -3px 10px rgba(0,0,0,0.9), inset 0 3px 10px rgba(212,175,100,0.2), 0 0 30px rgba(212,175,100,0.4);
+  transform: translateY(-3px);
+  color: rgba(255,220,150,1);
+}
+
+.radio-button:active {
+  transform: translateY(1px) scale(0.96);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.95), inset 0 3px 10px rgba(0,0,0,0.95), inset 0 -3px 10px rgba(212,175,100,0.05);
+}
+
+.radio-button.power-btn {
+  background: linear-gradient(145deg, rgba(90,40,35,1) 0%, rgba(60,30,25,1) 100%);
+}
+
+.radio-button.power-btn.active {
+  background: linear-gradient(145deg, rgba(212,175,100,0.4) 0%, rgba(180,140,70,0.3) 50%, rgba(70,35,30,1) 100%);
+  border-image: linear-gradient(135deg, rgba(212,175,100,1) 0%, rgba(255,220,150,1) 50%, rgba(212,175,100,1) 100%) 1;
+  box-shadow: 0 8px 20px rgba(212,175,100,0.7), inset 0 0 25px rgba(212,175,100,0.4), 0 0 40px rgba(212,175,100,0.5);
+  color: rgba(255,230,180,1);
+  text-shadow: 0 0 15px rgba(212,175,100,1);
+}
+
+.button-container .radio-button.play-btn {
+  background: linear-gradient(145deg, rgba(180,140,70,0.5) 0%, rgba(100,70,40,1) 50%, rgba(60,35,25,1) 100%);
+  border-image: linear-gradient(135deg, rgba(212,175,100,1) 0%, rgba(255,220,150,1) 50%, rgba(212,175,100,1) 100%) 1;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.95), inset 0 -3px 10px rgba(0,0,0,0.8), inset 0 3px 10px rgba(212,175,100,0.3), 0 0 25px rgba(212,175,100,0.4);
+}
+
+
+.volume-indicator {
+  font-family: 'Courier New', monospace;
+  font-size: 24px;
+  font-weight: bold;
+  color: rgba(212, 175, 100, 1);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
   letter-spacing: 2px;
-  animation: glow 2s ease-in-out infinite;
 }
 
-@keyframes glow {
-  0%, 100% { opacity: 0.8; }
-  50% { opacity: 1; }
-}
-
-/* Close Button */
 #radioPanelClose {
   position: absolute;
   top: 15px;
   right: 15px;
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(212, 175, 55, 0.6);
-  background: radial-gradient(circle at 30% 30%, #3a3a2a, #1a1a12);
-  color: #d4af37;
-  font-size: 28px;
+  width: 55px;
+  height: 55px;
+  border: 5px solid rgba(180, 140, 70, 1);
+  background: radial-gradient(circle at 40% 40%, rgba(80,50,45,1) 0%, rgba(40,25,20,1) 100%);
+  color: rgba(212,175,100,1);
+  font-size: 36px;
   cursor: pointer;
   border-radius: 50%;
   transition: all 0.3s ease;
   line-height: 1;
   padding: 0;
   font-weight: bold;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.95), inset 0 3px 8px rgba(212,175,100,0.15);
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 10002;
 }
 
 #radioPanelClose:hover {
-  background: radial-gradient(circle at 30% 30%, #4a4a3a, #2a2a1a);
-  border-color: rgba(212, 175, 55, 1);
-  transform: scale(1.1) rotate(90deg);
-  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.5);
+  background: radial-gradient(circle at 40% 40%, rgba(212,175,100,0.5) 0%, rgba(40,25,20,1) 100%);
+  border-color: rgba(212,175,100,1);
+  transform: scale(1.15) rotate(90deg);
+  box-shadow: 0 6px 22px rgba(212,175,100,0.6), inset 0 0 18px rgba(212,175,100,0.3), 0 0 35px rgba(212,175,100,0.5);
+  color: rgba(255,230,180,1);
+  text-shadow: 0 0 15px rgba(212,175,100,1);
 }
 
-/* Volume percentage indicator */
-.volume-indicator {
-  font-family: 'Courier New', monospace;
-  font-size: 18px;
-  color: #d4af37;
-  text-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
-  margin-top: 10px;
+/* Bottom corner brackets (inside panel) */
+.volume-indicator::before {
+  content: '';
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  bottom: 12px;
+  left: 12px;
+  background: linear-gradient(135deg, rgba(212,175,100,1) 0%, rgba(180,140,70,1) 50%, rgba(100,70,40,1) 100%);
+  clip-path: polygon(0 0, 25% 0, 25% 75%, 100% 75%, 100% 100%, 0 100%);
+  z-index: 10;
+  pointer-events: none;
+  box-shadow: inset 2px 2px 5px rgba(255,255,255,0.3), inset -2px -2px 5px rgba(0,0,0,0.5);
+}
+.volume-indicator::after {
+  content: '';
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  bottom: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, rgba(212,175,100,1) 0%, rgba(180,140,70,1) 50%, rgba(100,70,40,1) 100%);
+  clip-path: polygon(75% 0, 100% 0, 100% 100%, 0 100%, 0 75%, 75% 75%);
+  z-index: 10;
+  pointer-events: none;
+  box-shadow: inset 2px 2px 5px rgba(255,255,255,0.3), inset -2px -2px 5px rgba(0,0,0,0.5);
 }
