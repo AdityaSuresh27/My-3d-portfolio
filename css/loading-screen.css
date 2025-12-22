@@ -1,0 +1,70 @@
+/* Loading Screen Styles */
+#loadingScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0a4d68 0%, #088395 50%, #05bfdb 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  transition: opacity 1.2s ease-in-out, transform 1.2s ease-in-out;
+}
+
+#loadingScreen.hidden {
+  opacity: 0;
+  transform: scale(1.15);
+  pointer-events: none;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+#liquidCanvas {
+  display: block;
+  filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.4));
+  transition: filter 0.8s ease;
+}
+
+#loadingScreen.hidden #liquidCanvas {
+  filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.6)) blur(2px);
+}
+
+/* Stars background */
+#starsCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transition: opacity 0.8s ease-out;
+}
+
+#loadingScreen.hidden #starsCanvas {
+  opacity: 0;
+}
+
+/* Transition overlay */
+.transition-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, #0a4d68 0%, #000000 100%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity 1.2s ease-in-out;
+}
+
+.transition-overlay.active {
+  opacity: 1;
+}

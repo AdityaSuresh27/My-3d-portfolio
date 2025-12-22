@@ -32,6 +32,8 @@ let tvOutlineMeshes = [];
 let shelfParts = [];
 let shelfOutlineMeshes = [];
 let shelfScrollPosition = 0; // 0 to 4 (for 5 positions)
+let shelfOutlineOffsetX = 0.02;
+let shelfOutlineOffsetY = -0.01;
 let shelfScrolling = false;
 
 // Radio mode variables
@@ -196,13 +198,26 @@ const dialogueContent = {
 let beanBags = [];
 let tableObj = null;
 
-init();
-if (typeof AudioManager !== 'undefined') {
-  window.audioManager = new AudioManager();
-  window.audioManager.init();
-}
-loadScene();
-animate();
+// Wait for loading screen to initialize, then load assets
+window.addEventListener('DOMContentLoaded', () => {
+  // Wait for loading screen to be fully ready
+  setTimeout(() => {
+    // Initialize Three.js scene FIRST
+    init();
+    
+    // Initialize audio manager
+    if (typeof AudioManager !== 'undefined') {
+      window.audioManager = new AudioManager();
+      window.audioManager.init();
+    }
+    
+    // Start animation loop (won't show scene until loaded)
+    animate();
+    
+    // Now load the GLB scene (this will trigger asset tracking)
+    loadScene();
+  }, 500); // Increased delay to ensure loading screen canvas is ready
+});
 
 function init() {
   scene = new THREE.Scene();
@@ -849,6 +864,7 @@ function showRadioPanel() {
   // Disable shelf scrolling
   window.removeEventListener('wheel', onMouseWheel);
   window.removeEventListener('keydown', onKeyDown);
+  hoverEnabled = false;
   
   // Hide universal exit button temporarily
   const exitBtn = document.getElementById('universalExitBtn');
@@ -885,6 +901,7 @@ function hideRadioPanel() {
   // Re-enable shelf scrolling
   window.addEventListener('wheel', onMouseWheel, { passive: false });
   window.addEventListener('keydown', onKeyDown);
+  hoverEnabled = true;
   
   // Re-enable universal exit button
   const exitBtn = document.getElementById('universalExitBtn');
@@ -1884,10 +1901,26 @@ function onWindowResize() {
 }
 
 function loadScene() {
+// Track texture loading
+  if (tableObj) { // If table texture is being loaded
+    window.assetLoader.addAsset(); // Register table texture
+  }
+  
   const loader = new GLTFLoader();
+  
+  // Register GLB as an asset to load
+  if (window.assetLoader) {
+    window.assetLoader.addAsset();
+  }
+  
   loader.load(
     "./assets/models/scene.glb",
     (gltf) => {
+      // Mark GLB as loaded
+      if (window.assetLoader) {
+        window.assetLoader.assetLoaded();
+      }
+      
       scene.add(gltf.scene);
       
       let chessPiecesToParent = [];
@@ -2026,12 +2059,57 @@ function loadScene() {
           }
           
           
-          if (child.name === "table") {
-            tableObj = child;
-            sofaParts.push(child);
-            child.position.x += 0.02; 
-            console.log('🪑 Table found and moved back');
+      if (child.name === "table") {
+        tableObj = child;
+        sofaParts.push(child);
+        child.position.x += 0.02; 
+        
+        console.log('🪑 Table found - original material:', child.material?.type);
+        console.log('🪑 Table color before texture:', child.material?.color);
+        
+        // Load and apply texture
+        const textureLoader = new THREE.TextureLoader();
+        textureLoader.load('./assets/icons/texture.jpg', (texture) => {
+          console.log('✅ Texture loaded successfully:', texture);
+
+          // Mark texture as loaded
+          if (window.assetLoader) {
+            window.assetLoader.assetLoaded();
           }
+          
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.repeat.set(2, 2); // Increase to see pattern more clearly
+          texture.colorSpace = THREE.SRGBColorSpace; // Ensure correct color space
+          texture.needsUpdate = true;
+          
+          // COMPLETELY REPLACE material (don't clone corrupted one)
+          child.material = new THREE.MeshStandardMaterial({
+            map: texture,
+            color: 0xffffff, // White multiplier (doesn't change texture color)
+            metalness: 0.1,   // Less metallic to see texture better
+            roughness: 0.9,   // More rough for better texture visibility
+            side: THREE.DoubleSide
+          });
+          
+          child.material.needsUpdate = true;
+          
+          console.log('🪑 Table texture applied with NEW material');
+          console.log('🪑 Texture size:', texture.image?.width, 'x', texture.image?.height);
+        }, 
+        (progress) => {
+          console.log('📥 Loading texture:', (progress.loaded / progress.total * 100).toFixed(0) + '%');
+        },
+        (err) => {
+          console.error('❌ Failed to load table texture:', err);
+          console.error('❌ Check if file exists at: ./assets/icons/texture.jpg');
+          
+
+          console.log('🪑 Applied fallback brown material');
+        });
+        
+        console.log('🪑 Table found and moved back');
+      }
 
           // DESK MODE OBJECTS
           const deskObjectNames = [
@@ -2414,6 +2492,9 @@ shelfParts.forEach((part) => {
   outlineMesh.scale.multiplyScalar(1.07);
   outlineMesh.renderOrder = 999;
   part.add(outlineMesh);
+  outlineMesh.position.x = shelfOutlineOffsetX; // Apply X offset
+  outlineMesh.position.y = shelfOutlineOffsetY; // Apply Y offset
+  shelfOutlineMeshes.push({ mesh: outlineMesh, parent: part });
   shelfOutlineMeshes.push({ mesh: outlineMesh, parent: part });
   outlineMesh.visible = false;
   outlineMesh.userData.targetOpacity = 0;
@@ -2496,7 +2577,8 @@ if (chessBoard) {
   console.log('Chess board scale:', chessBoard.scale);
   console.log('Outline mesh scale:', outlineMesh.scale);
 }
-      document.getElementById("loading").style.display = "none";
+      // Loading complete - no loading div to hide anymore
+      console.log("✅ Scene loaded successfully");
       
       // Show intro dialogue ONLY after loading is complete
       setTimeout(() => {
