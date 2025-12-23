@@ -1,13 +1,14 @@
 // LoadingScreen.js - Manages the loading screen UI
 
 class LoadingScreen {
-  constructor() {
+constructor() {
     this.canvas = null;
     this.ctx = null;
     this.starsCanvas = null;
     this.starsCtx = null;
     this.stars = [];
     this.progress = 0;
+    this.targetProgress = 0; 
     this.time = 0;
     this.logoImg = null;
     this.animationFrame = null;
@@ -30,6 +31,7 @@ class LoadingScreen {
   }
 
   init() {
+    console.log('Loading screen initializing...');
     // Create loading screen elements
     const loadingScreen = document.createElement('div');
     loadingScreen.id = 'loadingScreen';
@@ -85,6 +87,10 @@ class LoadingScreen {
       window.assetLoader.onComplete(() => {
         this.complete();
       });
+      
+      console.log('✅ Loading screen ready - waiting for assets');
+    } else {
+      console.error('❌ AssetLoader not found!');
     }
   }
 
@@ -105,7 +111,9 @@ class LoadingScreen {
   }
 
   updateProgress(newProgress) {
-    this.progress = Math.min(newProgress, 100);
+    // Don't jump instantly - let animate() smooth it out
+    this.targetProgress = Math.min(newProgress, 100);
+    console.log(`🌊 Target progress updated: ${this.targetProgress.toFixed(1)}%`);
   }
 
   drawStars() {
@@ -188,6 +196,18 @@ class LoadingScreen {
   drawLiquid() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
+   // ULTRA SMOOTH exponential smoothing - like CSS transitions
+    const progressDiff = this.targetProgress - this.progress;
+    
+    if (Math.abs(progressDiff) > 0.05) {
+      // Smooth exponential easing - moves 8% closer each frame
+      // This creates a natural deceleration curve
+      this.progress += progressDiff * 0.05;
+    } else {
+      // Snap to target when very close to avoid floating point drift
+      this.progress = this.targetProgress;
+    }
+    
     // Outer glow
     const glowPulse = Math.sin(this.time * 0.02) * 0.05 + 0.95;
     const glowGradient = this.ctx.createRadialGradient(
@@ -220,7 +240,7 @@ class LoadingScreen {
     this.ctx.arc(this.centerX, this.centerY, this.radius, 0, Math.PI * 2);
     this.ctx.fill();
     
-    // Calculate liquid level
+    // Calculate liquid level - driven by smooth progress
     const fillHeight = (this.progress / 100) * (this.radius * 2);
     const liquidBottom = this.centerY + this.radius;
     const liquidTop = liquidBottom - fillHeight;
@@ -251,6 +271,7 @@ class LoadingScreen {
     this.ctx.lineTo(this.centerX + this.radius, liquidBottom);
     this.ctx.lineTo(this.centerX + this.radius, liquidTop);
     
+    // Draw wavy top surface (ALWAYS - this is the key!)
     for (let x = this.centerX + this.radius; x >= startX; x -= resolution) {
       const waveOffset = this.calculateWaveOffset(x, this.time);
       const y = liquidTop + waveOffset;
@@ -261,11 +282,10 @@ class LoadingScreen {
     this.ctx.closePath();
     this.ctx.fill();
     
-    // Wave layers
-    const waveDamping = this.progress > 95 ? Math.max(0, (100 - this.progress) / 5) : 1;
-    
-    if (this.progress > 3 && waveDamping > 0.1) {
-      this.ctx.fillStyle = `rgba(200, 200, 200, ${0.22 * waveDamping})`;
+    // Wave layers (only show if filling, hide when complete)
+    if (this.progress > 3 && this.progress < 97) {
+      // Layer 1
+      this.ctx.fillStyle = 'rgba(200, 200, 200, 0.22)';
       this.ctx.beginPath();
       
       for (let x = this.centerX + this.radius; x >= startX; x -= resolution) {
@@ -285,9 +305,104 @@ class LoadingScreen {
       this.ctx.fill();
     }
     
+    if (this.progress > 8 && this.progress < 96) {
+      // Layer 2
+      this.ctx.fillStyle = 'rgba(140, 140, 140, 0.16)';
+      this.ctx.beginPath();
+      
+      for (let x = this.centerX + this.radius; x >= startX; x -= resolution) {
+        const waveOffset = this.calculateWaveOffset(x + 60, this.time * 1.25, 1.1) * 0.72;
+        const y = liquidTop + waveOffset + 8;
+        if (x === this.centerX + this.radius) this.ctx.moveTo(x, y);
+        this.ctx.lineTo(x, y);
+      }
+      
+      for (let x = startX; x <= this.centerX + this.radius; x += resolution) {
+        const waveOffset = this.calculateWaveOffset(x + 60, this.time * 1.25, 1.1) * 0.72;
+        const y = liquidTop + waveOffset + 24;
+        this.ctx.lineTo(x, y);
+      }
+      
+      this.ctx.closePath();
+      this.ctx.fill();
+    }
+    
+    if (this.progress > 15 && this.progress < 95) {
+      // Layer 3
+      this.ctx.fillStyle = 'rgba(80, 80, 80, 0.12)';
+      this.ctx.beginPath();
+      
+      for (let x = this.centerX + this.radius; x >= startX; x -= resolution) {
+        const waveOffset = this.calculateWaveOffset(x - 40, this.time * 0.82, 1.9) * 0.58;
+        const y = liquidTop + waveOffset + 18;
+        if (x === this.centerX + this.radius) this.ctx.moveTo(x, y);
+        this.ctx.lineTo(x, y);
+      }
+      
+      for (let x = startX; x <= this.centerX + this.radius; x += resolution) {
+        const waveOffset = this.calculateWaveOffset(x - 40, this.time * 0.82, 1.9) * 0.58;
+        const y = liquidTop + waveOffset + 32;
+        this.ctx.lineTo(x, y);
+      }
+      
+      this.ctx.closePath();
+      this.ctx.fill();
+    }
+    
+    if (this.progress > 10 && this.progress < 96) {
+      // Layer 4
+      this.ctx.fillStyle = 'rgba(220, 220, 220, 0.18)';
+      this.ctx.beginPath();
+      
+      for (let x = this.centerX + this.radius; x >= startX; x -= resolution * 1.5) {
+        const waveOffset = this.calculateWaveOffset(x + 90, this.time * 1.42, 0.7) * 0.88;
+        const y = liquidTop + waveOffset - 4;
+        if (x === this.centerX + this.radius) this.ctx.moveTo(x, y);
+        this.ctx.lineTo(x, y);
+      }
+      
+      for (let x = startX; x <= this.centerX + this.radius; x += resolution * 1.5) {
+        const waveOffset = this.calculateWaveOffset(x + 90, this.time * 1.42, 0.7) * 0.88;
+        const y = liquidTop + waveOffset + 7;
+        this.ctx.lineTo(x, y);
+      }
+      
+      this.ctx.closePath();
+      this.ctx.fill();
+    }
+    
+    // Floating reflections
+    if (this.progress > 20 && this.progress < 94) {
+      const reflection1X = this.centerX + Math.sin(this.time * 0.018) * 40;
+      const reflection1Y = liquidTop + Math.cos(this.time * 0.022) * 12;
+      
+      const spotGradient1 = this.ctx.createRadialGradient(reflection1X, reflection1Y, 0, reflection1X, reflection1Y, 50);
+      spotGradient1.addColorStop(0, 'rgba(220, 220, 220, 0.18)');
+      spotGradient1.addColorStop(0.5, 'rgba(160, 160, 160, 0.08)');
+      spotGradient1.addColorStop(1, 'rgba(100, 100, 100, 0)');
+      
+      this.ctx.fillStyle = spotGradient1;
+      this.ctx.beginPath();
+      this.ctx.arc(reflection1X, reflection1Y, 50, 0, Math.PI * 2);
+      this.ctx.fill();
+      
+      const reflection2X = this.centerX - Math.sin(this.time * 0.024) * 45;
+      const reflection2Y = liquidTop + Math.sin(this.time * 0.019) * 14;
+      
+      const spotGradient2 = this.ctx.createRadialGradient(reflection2X, reflection2Y, 0, reflection2X, reflection2Y, 40);
+      spotGradient2.addColorStop(0, 'rgba(200, 200, 200, 0.14)');
+      spotGradient2.addColorStop(0.6, 'rgba(140, 140, 140, 0.06)');
+      spotGradient2.addColorStop(1, 'rgba(90, 90, 90, 0)');
+      
+      this.ctx.fillStyle = spotGradient2;
+      this.ctx.beginPath();
+      this.ctx.arc(reflection2X, reflection2Y, 40, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
+    
     this.ctx.restore();
     
-    // Draw logo
+    // Draw logo with liquid fill effect
     if (this.logoImg.complete) {
       const circleHeight = this.radius * 2;
       const logoAspectRatio = this.logoImg.width / this.logoImg.height;
@@ -356,16 +471,25 @@ class LoadingScreen {
     this.animationFrame = requestAnimationFrame(() => this.animate());
   }
 
-  complete() {
+complete() {
     if (this.transitionStarted) return;
     this.transitionStarted = true;
     
-    console.log('✅ All assets loaded - starting transition');
+    // Wait for visual progress to catch up to 100%
+    const waitForFullFill = () => {
+      if (this.progress >= 98) {
+        // Now fully filled - wait a moment then transition
+        console.log('🌊 Circle fully filled - starting transition');
+        setTimeout(() => {
+          this.startTransition();
+        }, 800); // Brief pause at 100% to appreciate the full circle
+      } else {
+        // Check again next frame
+        requestAnimationFrame(waitForFullFill);
+      }
+    };
     
-    // Wait a moment at 100%
-    setTimeout(() => {
-      this.startTransition();
-    }, 600);
+    waitForFullFill();
   }
 
   startTransition() {

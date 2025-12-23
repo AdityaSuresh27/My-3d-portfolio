@@ -38,9 +38,9 @@ class AssetLoader {
       this.progress = (this.loadedAssets / this.totalAssets) * 100;
     }
 
-    console.log(`📦 Asset Progress: ${this.loadedAssets}/${this.totalAssets} (${Math.round(this.progress)}%)`);
+    console.log(`📦 Asset Progress: ${this.loadedAssets}/${this.totalAssets} = ${Math.round(this.progress)}%`);
 
-    // Notify all progress callbacks
+    // Notify all progress callbacks with smooth updates
     this.onProgressCallbacks.forEach(callback => {
       callback(this.progress);
     });

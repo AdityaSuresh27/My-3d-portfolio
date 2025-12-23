@@ -198,11 +198,18 @@ const dialogueContent = {
 let beanBags = [];
 let tableObj = null;
 
-// Wait for loading screen to initialize, then load assets
+// Wait for DOM, then set up loading tracking BEFORE loading anything
 window.addEventListener('DOMContentLoaded', () => {
-  // Wait for loading screen to be fully ready
+  console.log('🚀 DOM loaded - setting up asset tracking');
+  
+  // Initialize loading screen FIRST
+  if (window.loadingScreen) {
+    window.loadingScreen.init();
+  }
+  
+  // Small delay to ensure loading screen canvas is ready
   setTimeout(() => {
-    // Initialize Three.js scene FIRST
+    // Initialize Three.js scene (but don't load assets yet)
     init();
     
     // Initialize audio manager
@@ -214,10 +221,45 @@ window.addEventListener('DOMContentLoaded', () => {
     // Start animation loop (won't show scene until loaded)
     animate();
     
-    // Now load the GLB scene (this will trigger asset tracking)
-    loadScene();
-  }, 500); // Increased delay to ensure loading screen canvas is ready
+    // Register all assets BEFORE loading starts
+    registerAllAssets();
+    
+    // Small delay to ensure asset counter is ready, then start loading
+    setTimeout(() => {
+      console.log(`📦 Starting to load ${window.assetLoader.totalAssets} assets...`);
+      loadScene();
+    }, 100);
+  }, 200);
 });
+
+// NEW FUNCTION: Register all assets that will be loaded
+function registerAllAssets() {
+  console.log('📝 Registering assets for tracking...');
+  
+  // 1. Main GLB scene file
+  window.assetLoader.addAsset();
+  console.log('  - Registered: scene.glb');
+  
+  // 2. Table texture (loaded separately in loadScene)
+  window.assetLoader.addAsset();
+  console.log('  - Registered: table texture');
+  
+  // 3. Logo image for loading screen (already loaded)
+  // (LoadingScreen handles this internally)
+  
+  // 4. Chess AI model (if it exists)
+  const chessModelPath = './assets/models/chess_model.onnx';
+  fetch(chessModelPath, { method: 'HEAD' })
+    .then(() => {
+      window.assetLoader.addAsset();
+      console.log('  - Registered: chess AI model');
+    })
+    .catch(() => {
+      console.log('  - Chess AI model not found (optional)');
+    });
+  
+  console.log(`✅ Total assets registered: ${window.assetLoader.totalAssets}`);
+}
 
 function init() {
   scene = new THREE.Scene();
@@ -1901,21 +1943,12 @@ function onWindowResize() {
 }
 
 function loadScene() {
-// Track texture loading
-  if (tableObj) { // If table texture is being loaded
-    window.assetLoader.addAsset(); // Register table texture
-  }
-  
   const loader = new GLTFLoader();
-  
-  // Register GLB as an asset to load
-  if (window.assetLoader) {
-    window.assetLoader.addAsset();
-  }
   
   loader.load(
     "./assets/models/scene.glb",
     (gltf) => {
+      console.log('✅ GLB scene loaded');
       // Mark GLB as loaded
       if (window.assetLoader) {
         window.assetLoader.assetLoaded();
@@ -2577,16 +2610,20 @@ if (chessBoard) {
   console.log('Chess board scale:', chessBoard.scale);
   console.log('Outline mesh scale:', outlineMesh.scale);
 }
-      // Loading complete - no loading div to hide anymore
       console.log("✅ Scene loaded successfully");
       
-      // Show intro dialogue ONLY after loading is complete
+      // Mark GLB as loaded
+      if (window.assetLoader) {
+        window.assetLoader.assetLoaded();
+      }
+      
+      // Show intro dialogue AFTER loading transition completes
+      // (LoadingScreen will handle the transition)
       setTimeout(() => {
         if (!hasSeenIntroDialogue) {
           showIntroDialogue();
         }
-      }, 800);
-      
+      }, 3000); // Wait for loading screen transition
       if (screenMesh && typeof LaptopScreen !== 'undefined') {
         screenMesh.visible = true;
         screenMesh.material.transparent = false;
