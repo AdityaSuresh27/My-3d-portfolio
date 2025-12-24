@@ -196,15 +196,14 @@ constructor() {
   drawLiquid() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
-   // ULTRA SMOOTH exponential smoothing - like CSS transitions
+    // ULTRA SMOOTH exponential smoothing - faster response
     const progressDiff = this.targetProgress - this.progress;
     
-    if (Math.abs(progressDiff) > 0.05) {
-      // Smooth exponential easing - moves 8% closer each frame
-      // This creates a natural deceleration curve
-      this.progress += progressDiff * 0.05;
+    if (Math.abs(progressDiff) > 0.01) {
+      // Much faster smoothing - moves 25% closer each frame (was 5%)
+      this.progress += progressDiff * 0.25;
     } else {
-      // Snap to target when very close to avoid floating point drift
+      // Snap to target when very close
       this.progress = this.targetProgress;
     }
     
@@ -478,11 +477,11 @@ complete() {
     // Wait for visual progress to catch up to 100%
     const waitForFullFill = () => {
       if (this.progress >= 98) {
-        // Now fully filled - wait a moment then transition
+        // Now fully filled - quick transition
         console.log('🌊 Circle fully filled - starting transition');
         setTimeout(() => {
           this.startTransition();
-        }, 800); // Brief pause at 100% to appreciate the full circle
+        }, 400); // Reduced from 800ms to 400ms
       } else {
         // Check again next frame
         requestAnimationFrame(waitForFullFill);
@@ -492,24 +491,24 @@ complete() {
     waitForFullFill();
   }
 
-  startTransition() {
+startTransition() {
     const loadingScreen = document.getElementById('loadingScreen');
     const overlay = document.getElementById('transitionOverlay');
     
     // Activate overlay
     overlay.classList.add('active');
     
-    // Fade out loading screen
+    // Fade out loading screen faster
     setTimeout(() => {
       loadingScreen.classList.add('hidden');
-    }, 400);
+    }, 200); // Reduced from 400ms
     
     // Remove completely after transition
     setTimeout(() => {
       cancelAnimationFrame(this.animationFrame);
       loadingScreen.remove();
       overlay.remove();
-    }, 2000);
+    }, 1200); // Reduced from 2000ms
   }
 }
 

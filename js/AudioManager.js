@@ -1,4 +1,4 @@
-// AudioManager.js - Handles background music and volume control
+// AudioManager.js - Handles background music and volume control with smooth transitions
 class AudioManager {
   constructor() {
     this.tracks = [
@@ -10,24 +10,27 @@ class AudioManager {
     this.currentTrackIndex = 0;
     this.audio = new Audio(this.tracks[0].path);
     this.audio.loop = true;
-    this.audio.volume = 0.6; // Default volume
+    this.audio.volume = 0;
     this.baseVolume = 0.6;
-    this.dimmedVolume = 0.15; // For dimmed modes
     this.isDimmed = false;
     this.isPlaying = false;
+    this.targetVolume = 0.6;
+    this.isFading = false;
+    this.currentFadeTimeout = null;
     
-    // Modes where music should NOT be dimmed
+    // Percentage-based volume adjustments
+    this.dimmedPercentage = 0.25; // 25% of base volume for dimmed modes
+    this.mutedPercentage = 0.0;   // 0% for muted modes
+    
     this.fullVolumeModes = ['normal', 'shelf', 'board', 'sofa', 'family', 'frame'];
-    
-    // Modes where music should be muted
     this.mutedModes = ['tv'];
-    
-    // Modes where music should be dimmed
     this.dimmedModes = ['desk', 'laptop', 'chess'];
+    
+    // Fade settings
+    this.fadeInterval = 20; // ms between steps
   }
   
   init() {
-    // Start playing on user interaction
     document.addEventListener('click', () => {
       if (!this.isPlaying) {
         this.play();
@@ -35,30 +38,86 @@ class AudioManager {
     }, { once: true });
   }
   
-  play() {
-    this.audio.play().catch(err => {
-      console.warn('Audio playback failed:', err);
-    });
-    this.isPlaying = true;
-    console.log('🎵 Background music started');
+  // Cancel any ongoing fade
+  cancelFade() {
+    if (this.currentFadeTimeout) {
+      clearTimeout(this.currentFadeTimeout);
+      this.currentFadeTimeout = null;
+    }
+    this.isFading = false;
   }
   
-  pause() {
+  async fadeVolume(targetVolume, duration = 1000) {
+    // Cancel any existing fade
+    this.cancelFade();
+    
+    this.isFading = true;
+    const startVolume = this.audio.volume;
+    const volumeDelta = targetVolume - startVolume;
+    const steps = Math.ceil(duration / this.fadeInterval);
+    const stepSize = volumeDelta / steps;
+    
+    return new Promise((resolve) => {
+      let currentStep = 0;
+      
+      const fadeStep = () => {
+        currentStep++;
+        
+        if (currentStep >= steps) {
+          this.audio.volume = Math.max(0, Math.min(1, targetVolume));
+          this.isFading = false;
+          this.currentFadeTimeout = null;
+          resolve();
+        } else {
+          const newVolume = startVolume + (stepSize * currentStep);
+          this.audio.volume = Math.max(0, Math.min(1, newVolume));
+          this.currentFadeTimeout = setTimeout(fadeStep, this.fadeInterval);
+        }
+      };
+      
+      fadeStep();
+    });
+  }
+  
+  async play() {
+    try {
+      await this.audio.play();
+      this.isPlaying = true;
+      
+      // Fade in from 0 to target volume
+      await this.fadeVolume(this.targetVolume, 2000);
+      
+      console.log('🎵 Background music started');
+    } catch (err) {
+      console.warn('Audio playback failed:', err);
+    }
+  }
+  
+  async pause(fadeOut = true) {
+    if (fadeOut) {
+      await this.fadeVolume(0, 1000);
+    }
     this.audio.pause();
     this.isPlaying = false;
   }
   
-  setTrack(index) {
+  async setTrack(index) {
     const wasPlaying = this.isPlaying;
-    const currentTime = this.audio.currentTime;
     
-    this.audio.pause();
+    if (wasPlaying) {
+      // Fade out current track
+      await this.fadeVolume(0, 800);
+      this.audio.pause();
+    }
+    
     this.currentTrackIndex = index;
     this.audio.src = this.tracks[index].path;
     this.audio.currentTime = 0;
     
     if (wasPlaying) {
-      this.audio.play();
+      await this.audio.play();
+      // Fade in new track
+      await this.fadeVolume(this.targetVolume, 800);
     }
     
     console.log('🎵 Switched to:', this.tracks[index].name);
@@ -74,31 +133,70 @@ class AudioManager {
     this.setTrack(prevIndex);
   }
   
-  setVolume(volume) {
+  // NEW: Set volume INSTANTLY (for radio knob)
+  setVolumeInstant(volume) {
     this.baseVolume = Math.max(0, Math.min(1, volume));
-    if (!this.isDimmed) {
-      this.audio.volume = this.baseVolume;
+    
+    // Cancel any ongoing fade
+    this.cancelFade();
+    
+    // Calculate actual volume based on current mode
+    let actualVolume;
+    if (this.isDimmed) {
+      // If dimmed, apply percentage to base volume
+      actualVolume = this.baseVolume * this.dimmedPercentage;
+    } else {
+      actualVolume = this.baseVolume;
     }
+    
+    // Set instantly
+    this.audio.volume = actualVolume;
+    this.targetVolume = actualVolume;
+    
+    console.log('🔊 Volume set instantly to:', Math.round(this.baseVolume * 100) + '%', `(actual: ${Math.round(actualVolume * 100)}%)`);
+  }
+  
+  // MODIFIED: Set volume with fade (for UI controls outside radio)
+  async setVolume(volume) {
+    this.baseVolume = Math.max(0, Math.min(1, volume));
+    
+    if (!this.isDimmed) {
+      this.targetVolume = this.baseVolume;
+      await this.fadeVolume(this.baseVolume, 500);
+    } else {
+      // If dimmed, update target but keep current dimmed level
+      this.targetVolume = this.baseVolume * this.dimmedPercentage;
+    }
+    
     console.log('🔊 Volume set to:', Math.round(this.baseVolume * 100) + '%');
   }
   
-  updateForMode(mode) {
+  async updateForMode(mode) {
+    let newTargetVolume;
+    
     if (this.mutedModes.includes(mode)) {
-      // Mute in TV mode
-      this.audio.volume = 0;
+      // Mute = 0% of base volume
+      newTargetVolume = this.baseVolume * this.mutedPercentage;
       this.isDimmed = true;
-      console.log('Music muted for mode:', mode);
+      console.log('🔇 Music muting for mode:', mode);
     } else if (this.fullVolumeModes.includes(mode)) {
-      // Full volume in normal, shelf, board, sofa, family, frame modes
-      this.audio.volume = this.baseVolume;
+      // Full volume = 100% of base volume
+      newTargetVolume = this.baseVolume;
       this.isDimmed = false;
-      console.log('Music full volume for mode:', mode);
+      console.log('🔊 Music full volume for mode:', mode);
     } else if (this.dimmedModes.includes(mode)) {
-      // Dimmed in desk, laptop, chess modes
-      this.audio.volume = this.dimmedVolume;
+      // Dimmed = 25% of base volume (or whatever percentage is set)
+      newTargetVolume = this.baseVolume * this.dimmedPercentage;
       this.isDimmed = true;
-      console.log('Music dimmed for mode:', mode);
+      console.log('🔉 Music dimming for mode:', mode, `(${Math.round(this.dimmedPercentage * 100)}% of base)`);
+    } else {
+      return;
     }
+    
+    this.targetVolume = newTargetVolume;
+    
+    // Smooth transition to new volume
+    await this.fadeVolume(newTargetVolume, 1200);
   }
   
   getCurrentTrack() {
@@ -107,6 +205,10 @@ class AudioManager {
   
   getVolume() {
     return this.baseVolume;
+  }
+  
+  getActualVolume() {
+    return this.audio.volume;
   }
 }
 

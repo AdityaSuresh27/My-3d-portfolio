@@ -535,7 +535,6 @@ class LaptopScreen {
     if (name === 'fileManager') {
       const folders = [
         { icon: '📁', name: 'Documents', size: '245 items' },
-        { icon: '📁', name: 'Projects', size: '18 items' },
         { icon: '📁', name: 'Downloads', size: '127 items' },
         { icon: '📁', name: 'Pictures', size: '1,453 items' },
         { icon: '📁', name: 'Music', size: '892 items' },
@@ -734,7 +733,6 @@ const contentX = win.x + 50;
 if (name === 'fileManager') {
   const folders = [
     { icon: '📁', name: 'Documents', size: '245 items' },
-    { icon: '📁', name: 'Projects', size: '18 items' },
     { icon: '📁', name: 'Downloads', size: '127 items' },
     { icon: '📁', name: 'Pictures', size: '1,453 items' },
     { icon: '📁', name: 'Music', size: '892 items' },
@@ -1330,7 +1328,6 @@ const maxWidth = win.w - 100;
 if (name === 'fileManager') {
   const folders = [
     { icon: '📁', name: 'Documents', size: '245 items' },
-    { icon: '📁', name: 'Projects', size: '18 items' },
     { icon: '📁', name: 'Downloads', size: '127 items' },
     { icon: '📁', name: 'Pictures', size: '1,453 items' },
     { icon: '📁', name: 'Music', size: '892 items' },

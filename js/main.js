@@ -32,8 +32,8 @@ let tvOutlineMeshes = [];
 let shelfParts = [];
 let shelfOutlineMeshes = [];
 let shelfScrollPosition = 0; // 0 to 4 (for 5 positions)
-let shelfOutlineOffsetX = 0.02;
-let shelfOutlineOffsetY = -0.01;
+let shelfOutlineOffsetX = 0;
+let shelfOutlineOffsetY = 0;
 let shelfScrolling = false;
 
 // Radio mode variables
@@ -267,7 +267,7 @@ function init() {
   scene.background = new THREE.Color(0x1a1a2e);
   
   camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
-  camera.position.set(1.695342022365481, 1.1890427194070448, 1.0959525309104552);
+  camera.position.set(1.8995096440842898, 1.2049732890027314, 1.1057035996481932);
   
   const spotLight = new THREE.SpotLight(0xffffff, 12.0);
   spotLight.position.set(-2.0794731965482103, 2.3485767272873055, 3.1517927212249153);
@@ -320,6 +320,7 @@ function init() {
   setupDialogueSystem();
   setupCertificateBoard();
   setupRadioPanel();
+  setupMobileControls();
 }
 
 function updateCameraDebug() {
@@ -339,29 +340,40 @@ function setupUniversalExitButton() {
     btn.className = 'exit-btn';
     btn.innerHTML = '✕';
     btn.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: rgba(94, 231, 223, 0.9);
-      color: #1a1a2e;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      display: none;
-      z-index: 1000;
-      transition: all 0.3s ease;
-      font-weight: bold;
-    `;
+        position: fixed;
+        top: 25px;
+        right: 25px;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(30, 35, 50, 0.95) 0%, rgba(25, 30, 45, 0.98) 100%);
+        color: #5ee7df;
+        border: 2px solid rgba(94, 231, 223, 0.6);
+        font-size: 20px;
+        font-weight: 600;
+        cursor: pointer;
+        display: none;
+        z-index: 1000;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 
+                    0 0 20px rgba(94, 231, 223, 0.2),
+                    inset 0 1px 0 rgba(94, 231, 223, 0.1);
+        backdrop-filter: blur(10px);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      `;
     btn.addEventListener('mouseenter', () => {
-      btn.style.background = 'rgba(94, 231, 223, 1)';
-      btn.style.transform = 'scale(1.1)';
+      btn.style.background = 'linear-gradient(135deg, rgba(0, 16, 98, 0.95) 0%, rgba(0, 16, 98, 0.95) 100%)';
+      btn.style.borderColor = 'rgba(0, 0, 0, 0.8)';
+      btn.style.color = '#ffffff';
+      btn.style.transform = 'scale(1.08) translateY(-2px)';
+      btn.style.boxShadow = '0 6px 24px rgba(26, 42, 123, 0.6), 0 0 30px rgba(255, 75, 100, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
     });
     btn.addEventListener('mouseleave', () => {
-      btn.style.background = 'rgba(94, 231, 223, 0.9)';
-      btn.style.transform = 'scale(1)';
+      btn.style.background = 'linear-gradient(135deg, rgba(30, 35, 50, 0.95) 0%, rgba(25, 30, 45, 0.98) 100%)';
+      btn.style.borderColor = 'rgba(94, 231, 223, 0.6)';
+      btn.style.color = '#5ee7df';
+      btn.style.transform = 'scale(1) translateY(0)';
+      btn.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.6), 0 0 20px rgba(94, 231, 223, 0.2), inset 0 1px 0 rgba(94, 231, 223, 0.1)';
     });
 btn.addEventListener('click', exitCurrentMode);
 btn.style.pointerEvents = 'auto'; 
@@ -373,6 +385,153 @@ document.addEventListener('keydown', (e) => {
     exitCurrentMode();
   }
 });
+}
+
+function setupMobileControls() {
+  // Detect mobile
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                   ('ontouchstart' in window) || 
+                   (navigator.maxTouchPoints > 0);
+  
+  if (!isMobile) return; // Only create controls on mobile
+  
+  console.log('📱 Mobile device detected - creating touch controls');
+  
+  // Create mobile control container
+  const mobileControls = document.createElement('div');
+  mobileControls.id = 'mobileControls';
+  mobileControls.style.cssText = `
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  `;
+  
+  // D-pad container
+  const dpad = document.createElement('div');
+  dpad.style.cssText = `
+    display: grid;
+    grid-template-columns: repeat(3, 60px);
+    grid-template-rows: repeat(3, 60px);
+    gap: 8px;
+  `;
+  
+  // Create buttons
+  const buttons = {
+    up: { row: 1, col: 2, symbol: '▲', keys: ['w', 'ArrowUp'] },
+    left: { row: 2, col: 1, symbol: '◄', keys: ['a', 'ArrowLeft'] },
+    down: { row: 3, col: 2, symbol: '▼', keys: ['s', 'ArrowDown'] },
+    right: { row: 2, col: 3, symbol: '►', keys: ['d', 'ArrowRight'] }
+  };
+  
+  Object.entries(buttons).forEach(([dir, config]) => {
+    const btn = document.createElement('button');
+    btn.className = 'mobile-btn';
+    btn.textContent = config.symbol;
+    btn.style.cssText = `
+      grid-row: ${config.row};
+      grid-column: ${config.col};
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(94, 231, 223, 0.25) 0%, rgba(94, 200, 223, 0.2) 100%);
+      border: 2px solid rgba(94, 231, 223, 0.5);
+      color: #5ee7df;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    `;
+    
+    // Touch events for each direction
+    btn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      btn.style.background = 'linear-gradient(135deg, rgba(94, 231, 223, 0.6) 0%, rgba(94, 200, 223, 0.5) 100%)';
+      btn.style.transform = 'scale(0.95)';
+      
+      // Simulate keydown for each key
+      config.keys.forEach(key => {
+        const event = new KeyboardEvent('keydown', { key, bubbles: true });
+        window.dispatchEvent(event);
+      });
+    });
+    
+    btn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      btn.style.background = 'linear-gradient(135deg, rgba(94, 231, 223, 0.25) 0%, rgba(94, 200, 223, 0.2) 100%)';
+      btn.style.transform = 'scale(1)';
+      
+      // Simulate keyup for each key
+      config.keys.forEach(key => {
+        const event = new KeyboardEvent('keyup', { key, bubbles: true });
+        window.dispatchEvent(event);
+      });
+    });
+    
+    dpad.appendChild(btn);
+  });
+  
+  // Enter button
+  const enterBtn = document.createElement('button');
+  enterBtn.textContent = 'ENTER';
+  enterBtn.style.cssText = `
+    width: 140px;
+    height: 55px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(94, 231, 223, 0.3) 0%, rgba(94, 200, 223, 0.25) 100%);
+    border: 2px solid rgba(94, 231, 223, 0.6);
+    color: #5ee7df;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    letter-spacing: 2px;
+  `;
+  
+  enterBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    enterBtn.style.background = 'linear-gradient(135deg, rgba(94, 231, 223, 0.7) 0%, rgba(94, 200, 223, 0.6) 100%)';
+    enterBtn.style.transform = 'scale(0.95)';
+    
+    const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
+    window.dispatchEvent(event);
+  });
+  
+  enterBtn.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    enterBtn.style.background = 'linear-gradient(135deg, rgba(94, 231, 223, 0.3) 0%, rgba(94, 200, 223, 0.25) 100%)';
+    enterBtn.style.transform = 'scale(1)';
+  });
+  
+  mobileControls.appendChild(dpad);
+  mobileControls.appendChild(enterBtn);
+  document.body.appendChild(mobileControls);
+  
+  // Show/hide controls based on mode
+  window.showMobileControls = () => {
+    mobileControls.style.display = 'flex';
+    setTimeout(() => { mobileControls.style.opacity = '1'; }, 50);
+  };
+  
+  window.hideMobileControls = () => {
+    mobileControls.style.opacity = '0';
+    setTimeout(() => { mobileControls.style.display = 'none'; }, 300);
+  };
 }
 
 function setupDialogueSystem() {
@@ -800,7 +959,7 @@ function setupRadioPanel() {
       if (window.audioManager) {
         const currentVol = window.audioManager.getVolume();
         const newVol = Math.max(0, Math.min(1, currentVol + delta / 360));
-        window.audioManager.setVolume(newVol);
+        window.audioManager.setVolumeInstant(newVol); // ← CHANGED: Use instant method
         updateVolumeDisplay(newVol);
         rotateKnob(volumeKnob, newVol * 270 - 135);
       }
@@ -1346,9 +1505,9 @@ function exitSofaMode() {
   
   // Animate camera back to normal view
   animateCameraTo(
-    1.695342022365481, 1.1890427194070448, 1.0959525309104552,
-    -0.19350259303174752, 1.0415828316110878, 1.1136973219807842
-  );
+  1.8995096440842898, 1.2049732890027314, 1.1057035996481932,
+  -0.19339297685447426, 1.0415828316110889, 1.1253654180086836
+);
   
   console.log("Exited sofa mode to normal mode");
 }
@@ -1368,10 +1527,10 @@ function exitDeskMode() {
   hideExitButton();
   
   // Animate camera back to normal view
-  animateCameraTo(
-    1.695342022365481, 1.1890427194070448, 1.0959525309104552,
-    -0.19350259303174752, 1.0415828316110878, 1.1136973219807842
-  );
+ animateCameraTo(
+  1.8995096440842898, 1.2049732890027314, 1.1057035996481932,
+  -0.19339297685447426, 1.0415828316110889, 1.1253654180086836
+);
   
   console.log("Exited desk mode to normal mode");
 }
@@ -1432,9 +1591,9 @@ function exitBoardMode() {
       
       // Animate camera back to normal view
       animateCameraTo(
-        1.695342022365481, 1.1890427194070448, 1.0959525309104552,
-        -0.19350259303174752, 1.0415828316110878, 1.1136973219807842
-      );
+  1.8995096440842898, 1.2049732890027314, 1.1057035996481932,
+  -0.19339297685447426, 1.0415828316110889, 1.1253654180086836
+);
       
       console.log("Exited board mode to normal mode");
     }, Math.max(audioDuration, 1200)); 
@@ -1462,9 +1621,9 @@ function exitTVMode() {
   
   // Animate camera back to normal view
   animateCameraTo(
-    1.695342022365481, 1.1890427194070448, 1.0959525309104552,
-    -0.19350259303174752, 1.0415828316110878, 1.1136973219807842
-  );
+  1.8995096440842898, 1.2049732890027314, 1.1057035996481932,
+  -0.19339297685447426, 1.0415828316110889, 1.1253654180086836
+);
   
   console.log("Exited TV mode to normal mode");
 }
@@ -1518,9 +1677,9 @@ function exitShelfMode() {
   
   // Animate camera back to normal view
   animateCameraTo(
-    1.695342022365481, 1.1890427194070448, 1.0959525309104552,
-    -0.19350259303174752, 1.0415828316110878, 1.1136973219807842
-  );
+  1.8995096440842898, 1.2049732890027314, 1.1057035996481932,
+  -0.19339297685447426, 1.0415828316110889, 1.1253654180086836
+);
   
   console.log("Exited shelf mode to normal mode");
 }
@@ -2522,7 +2681,7 @@ shelfParts.forEach((part) => {
     polygonOffsetUnits: -1
   });
   const outlineMesh = new THREE.Mesh(outlineGeo, outlineMat);
-  outlineMesh.scale.multiplyScalar(1.07);
+  outlineMesh.scale.multiplyScalar(1.03);
   outlineMesh.renderOrder = 999;
   part.add(outlineMesh);
   outlineMesh.position.x = shelfOutlineOffsetX; // Apply X offset
@@ -2617,13 +2776,12 @@ if (chessBoard) {
         window.assetLoader.assetLoaded();
       }
       
-      // Show intro dialogue AFTER loading transition completes
-      // (LoadingScreen will handle the transition)
+     // Show intro dialogue AFTER loading transition completes
       setTimeout(() => {
         if (!hasSeenIntroDialogue) {
           showIntroDialogue();
         }
-      }, 3000); // Wait for loading screen transition
+      }, 1500); 
       if (screenMesh && typeof LaptopScreen !== 'undefined') {
         screenMesh.visible = true;
         screenMesh.material.transparent = false;
@@ -3144,6 +3302,9 @@ function enterTVMode() {
   } else {
     console.error("TV screen mesh is NULL!");
   }
+  if (window.showMobileControls) {
+  window.showMobileControls();
+  }
 }
 
 function makePlayerMove(from, to) {
@@ -3336,6 +3497,11 @@ function animate() {
         
         if (tvScreen) {
           tvScreen.activate();
+        }
+        
+        // Show mobile controls on mobile devices
+        if (window.showMobileControls) {
+          window.showMobileControls();
         }
         
         console.log("📺 TV mode activated - camera locked, console OS ready");
