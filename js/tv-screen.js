@@ -21,11 +21,10 @@ this.games = [
     this.animationFrame = 0;
     this.glitchEffect = 0;
 
-    // Audio system
     this.backgroundMusic = null;
     this.clickSound = null;
     this.setupAudio();
-    
+    this.setupGameMenuButton(); 
     this.setupCanvas();
     this.setupControls();
   }
@@ -105,6 +104,10 @@ setupControls() {
   this.keyHandler = (e) => {
     if (!this.isActive) return;
     
+    // Prevent rapid-fire by checking if keys are already pressed
+    if (this.keyPressed) return;
+    this.keyPressed = true;
+    
     // LEFT/A = Previous game
     if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') {
       e.preventDefault();
@@ -127,6 +130,8 @@ setupControls() {
   };
   
   window.addEventListener('keydown', this.keyHandler);
+  this.keyUpHandler = (e) => { this.keyPressed = false; };
+  window.addEventListener('keyup', this.keyUpHandler);
 }
 
   playBeep() {
@@ -179,7 +184,65 @@ launchGame(gameIndex) {
     this.startSpaceInvadersGame();
   }
 }
+
+setupGameMenuButton() {
+  // Detect if device is mobile
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                   ('ontouchstart' in window) || 
+                   (navigator.maxTouchPoints > 0);
   
+  // Only create button on mobile devices
+  if (!isMobile) {
+    console.log('Desktop device - GAME MENU button disabled (use ESC key instead)');
+    this.gameMenuBtn = null;
+    return;
+  }
+  
+  // Create "GAME MENU" button (top-left, only visible in games on MOBILE)
+  const gameMenuBtn = document.createElement('button');
+  gameMenuBtn.id = 'gameMenuBtn';
+  gameMenuBtn.textContent = 'GAME MENU';
+  gameMenuBtn.style.cssText = `
+    position: fixed;
+    top: 25px;
+    left: 25px;
+    padding: 8px 16px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(30, 35, 50, 0.95) 0%, rgba(25, 30, 45, 0.98) 100%);
+    color: #5ee7df;
+    border: 2px solid rgba(94, 231, 223, 0.6);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: none;
+    z-index: 10001;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    pointer-events: auto;
+  `;
+  
+  gameMenuBtn.addEventListener('mouseenter', () => {
+    gameMenuBtn.style.background = 'linear-gradient(135deg, rgba(0, 16, 98, 0.95) 0%, rgba(0, 16, 98, 0.95) 100%)';
+    gameMenuBtn.style.transform = 'scale(1.05)';
+  });
+  
+  gameMenuBtn.addEventListener('mouseleave', () => {
+    gameMenuBtn.style.background = 'linear-gradient(135deg, rgba(30, 35, 50, 0.95) 0%, rgba(25, 30, 45, 0.98) 100%)';
+    gameMenuBtn.style.transform = 'scale(1)';
+  });
+  
+  gameMenuBtn.addEventListener('click', () => {
+    this.exitGame();
+  });
+  
+  document.body.appendChild(gameMenuBtn);
+  this.gameMenuBtn = gameMenuBtn;
+  
+  console.log('📱 Mobile device - GAME MENU button enabled');
+}
+
 activate() {
   this.isActive = true;
   
@@ -212,15 +275,83 @@ activate() {
   } else {
     console.error('❌ TV screen mesh or material missing!');
   }
-  // Start background music
-if (this.backgroundMusic) {
-  this.backgroundMusic.currentTime = 0;
-  this.backgroundMusic.play().catch(err => {
-    console.warn('Background music autoplay blocked:', err);
-  });
-}
-}
   
+  // Start background music
+  if (this.backgroundMusic) {
+    this.backgroundMusic.currentTime = 0;
+    this.backgroundMusic.play().catch(err => {
+      console.warn('Background music autoplay blocked:', err);
+    });
+  }
+
+  setTimeout(() => {
+    if (this.currentGame) {
+      console.log('📺 Restoring UI for game:', this.currentGame);
+      
+      // Show correct controls for current game
+      if (this.currentGame === 'snake') {
+        if (window.showMobileControls) window.showMobileControls('snake');
+      } else if (this.currentGame === 'pong') {
+        if (window.showMobileControls) window.showMobileControls('pong');
+      } else if (this.currentGame === 'tetris') {
+        if (window.showMobileControls) window.showMobileControls('tetris');
+      } else if (this.currentGame === 'invaders') {
+        if (window.showMobileControls) window.showMobileControls('invaders');
+      }
+      
+      // Show game menu button if mobile
+      if (this.gameMenuBtn) {
+        this.gameMenuBtn.style.display = 'block';
+      }
+      
+      console.log('✅ UI restored for', this.currentGame);
+    } else {
+      // We're in the menu - show menu controls
+      console.log('📺 Showing game menu UI');
+      if (window.showMobileControls) {
+        window.showMobileControls('menu');
+      }
+      
+      // Hide game menu button in menu mode
+      if (this.gameMenuBtn) {
+        this.gameMenuBtn.style.display = 'none';
+      }
+    }
+  }, 100); 
+}
+
+updateUIForCurrentState() {
+  console.log('🔄 Updating UI for state:', this.currentGame || 'menu');
+  
+  if (this.currentGame) {
+    // We're in a game - show game-specific controls
+    if (this.currentGame === 'snake') {
+      if (window.showMobileControls) window.showMobileControls('snake');
+    } else if (this.currentGame === 'pong') {
+      if (window.showMobileControls) window.showMobileControls('pong');
+    } else if (this.currentGame === 'tetris') {
+      if (window.showMobileControls) window.showMobileControls('tetris');
+    } else if (this.currentGame === 'invaders') {
+      if (window.showMobileControls) window.showMobileControls('invaders');
+    }
+    
+    // Show game menu button for mobile
+    if (this.gameMenuBtn) {
+      this.gameMenuBtn.style.display = 'block';
+    }
+  } else {
+    // We're in the menu - show menu controls
+    if (window.showMobileControls) {
+      window.showMobileControls('menu');
+    }
+    
+    // Hide game menu button in menu mode
+    if (this.gameMenuBtn) {
+      this.gameMenuBtn.style.display = 'none';
+    }
+  }
+}
+
 deactivate() {
   this.isActive = false;
   
@@ -249,13 +380,30 @@ deactivate() {
     this.beepSound.pause();
     this.beepSound.currentTime = 0;
   }
+  // CRITICAL: Hide ALL UI elements when deactivating
+  if (this.gameMenuBtn) {
+    this.gameMenuBtn.style.display = 'none';
+  }
   
+  if (window.hideMobileControls) {
+    window.hideMobileControls();
+  }
+  
+  const retryBtn = document.getElementById('btnRetry');
+  if (retryBtn) {
+    retryBtn.style.display = 'none';
+  }
   console.log('TV Screen deactivated - All audio stopped');
 }
   
 update() {
   if (!this.isActive) return;
   
+  if (!this._lastGameState || this._lastGameState !== this.currentGame) {
+    this.updateUIForCurrentState();
+    this._lastGameState = this.currentGame;
+  }
+
   this.animationFrame++;
   this.glitchEffect = Math.sin(this.animationFrame * 0.05) * 2;
   
@@ -510,6 +658,10 @@ dispose() {
   if (this.gameKeyUpHandler) {
     window.removeEventListener('keyup', this.gameKeyUpHandler);
   }
+  // ADDED: Clean up keyUpHandler for menu navigation
+  if (this.keyUpHandler) {
+    window.removeEventListener('keyup', this.keyUpHandler);
+  }
   
   // Stop and cleanup audio
   if (this.backgroundMusic) {
@@ -550,11 +702,24 @@ dispose() {
         if (this.snake.dir.x === 0) this.snake.nextDir = {x: 1, y: 0};
       } else if (e.key === 'Escape') {
         this.exitGame();
-      }
+      }else if (e.key === 'r' || e.key === 'R') {
+  if (this.snake.gameOver) {
+    this.startSnakeGame(); // Restart game
+  }
+}
     };
     
     window.removeEventListener('keydown', this.keyHandler);
     window.addEventListener('keydown', this.gameKeyHandler);
+    // Show mobile controls for snake (4-directional)
+    if (window.showMobileControls) {
+      window.showMobileControls('snake');
+    }
+
+    // Show game menu button
+    if (this.gameMenuBtn) {
+      this.gameMenuBtn.style.display = 'block';
+    }
   }
   
   updateSnakeGame() {
@@ -640,19 +805,24 @@ if (head.x === this.snake.food.x && head.y === this.snake.food.y) {
     ctx.fillText(`Score: ${this.snake.score}`, 40, 60);
     
     // Game Over
-    if (this.snake.gameOver) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-      ctx.fillRect(0, 0, w, h);
-      ctx.fillStyle = '#ff0088';
-      ctx.font = 'bold 64px "Courier New"';
-      ctx.textAlign = 'center';
-      ctx.fillText('GAME OVER', w/2, h/2 - 40);
-      ctx.font = '32px "Courier New"';
-      ctx.fillStyle = '#00ddff';
-      ctx.fillText(`Final Score: ${this.snake.score}`, w/2, h/2 + 20);
-      ctx.font = '20px "Courier New"';
-      ctx.fillText('Press ESC to return', w/2, h/2 + 80);
-    } else {
+  if (this.snake.gameOver) {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#ff0088';
+    ctx.font = 'bold 64px "Courier New"';
+    ctx.textAlign = 'center';
+    ctx.fillText('GAME OVER', w/2, h/2 - 40);
+    ctx.font = '32px "Courier New"';
+    ctx.fillStyle = '#00ddff';
+    ctx.fillText(`Final Score: ${this.snake.score}`, w/2, h/2 + 20);
+    ctx.font = '20px "Courier New"';
+    ctx.fillText('Press R to Retry • ESC to Menu', w/2, h/2 + 80);
+    
+    // Show retry button on mobile
+    if (window.showRetryButton) {
+      window.showRetryButton();
+    }
+  } else {
       ctx.fillStyle = '#00ddff';
       ctx.font = '16px "Courier New"';
       ctx.textAlign = 'center';
@@ -682,7 +852,11 @@ if (head.x === this.snake.food.x && head.y === this.snake.food.y) {
     this.pong.player.moveDown = true;
   } else if (e.key === 'Escape') {
     this.exitGame();
+} else if (e.key === 'r' || e.key === 'R') {
+  if (this.pong.gameOver) {
+    this.startPongGame();
   }
+}
 };
 
 this.gameKeyUpHandler = (e) => {
@@ -696,6 +870,13 @@ this.gameKeyUpHandler = (e) => {
 window.removeEventListener('keydown', this.keyHandler);
 window.addEventListener('keydown', this.gameKeyHandler);
 window.addEventListener('keyup', this.gameKeyUpHandler);
+if (window.showMobileControls) {
+  window.showMobileControls('pong');
+}
+
+if (this.gameMenuBtn) {
+  this.gameMenuBtn.style.display = 'block';
+}
   }
   
 updatePongGame() {
@@ -845,7 +1026,11 @@ updatePongGame() {
     ctx.fillText(winner, w/2, h/2);
     ctx.font = '20px "Courier New"';
     ctx.fillStyle = '#00ddff';
-    ctx.fillText('Press ESC to return', w/2, h/2 + 60);
+    ctx.fillText('Press R to Retry • ESC to Menu', w/2, h/2 + 60);
+
+    if (window.showRetryButton) {
+      window.showRetryButton();
+    }
   } else {
     ctx.fillStyle = '#00ddff';
     ctx.font = '16px "Courier New"';
@@ -877,11 +1062,22 @@ updatePongGame() {
         this.rotateTetromino();
       } else if (e.key === 'Escape') {
         this.exitGame();
+     } else if (e.key === 'r' || e.key === 'R') {
+        if (this.tetris.gameOver) {
+          this.startTetrisGame(); 
+        }
       }
     };
     
     window.removeEventListener('keydown', this.keyHandler);
     window.addEventListener('keydown', this.gameKeyHandler);
+    if (window.showMobileControls) {
+      window.showMobileControls('tetris');
+    }
+
+    if (this.gameMenuBtn) {
+      this.gameMenuBtn.style.display = 'block';
+    }
   }
   
   spawnTetromino() {
@@ -1066,7 +1262,12 @@ updatePongGame() {
       ctx.fillStyle = '#00ddff';
       ctx.fillText(`Score: ${this.tetris.score}`, w/2, h/2 + 20);
       ctx.font = '20px "Courier New"';
-      ctx.fillText('Press ESC to return', w/2, h/2 + 80);
+      ctx.fillText('Press R to Retry • ESC to Menu', w/2, h/2 + 80);
+
+      // Show retry button on mobile
+      if (window.showRetryButton) {
+        window.showRetryButton();
+      }
     } else {
       ctx.fillStyle = '#00ddff';
       ctx.font = '16px "Courier New"';
@@ -1119,7 +1320,11 @@ this.invaders = {
       }
     } else if (e.key === 'Escape') {
       this.exitGame();
-    }
+    }else if (e.key === 'r' || e.key === 'R') {
+      if (this.invaders.gameOver) {
+        this.startSpaceInvadersGame(); // ← CORRECT!
+      }
+}
   };
   
   this.gameKeyUpHandler = (e) => {
@@ -1133,6 +1338,15 @@ this.invaders = {
   window.removeEventListener('keydown', this.keyHandler);
   window.addEventListener('keydown', this.gameKeyHandler);
   window.addEventListener('keyup', this.gameKeyUpHandler);
+  // Show mobile controls for invaders (LEFT, RIGHT, FIRE)
+  if (window.showMobileControls) {
+    window.showMobileControls('invaders');
+  }
+
+  // Show game menu button
+  if (this.gameMenuBtn) {
+    this.gameMenuBtn.style.display = 'block';
+}
 }
 
 updateSpaceInvadersGame() {
@@ -1291,7 +1505,12 @@ inv.alienBullets = inv.alienBullets.filter(b => {
     ctx.fillStyle = '#00ddff';
     ctx.fillText(`Final Score: ${inv.score}`, w/2, h/2 + 20);
     ctx.font = '20px "Courier New"';
-    ctx.fillText('Press ESC to return', w/2, h/2 + 80);
+    ctx.fillText('Press R to Retry • ESC to Menu', w/2, h/2 + 80);
+
+    // Show retry button on mobile
+    if (window.showRetryButton) {
+      window.showRetryButton();
+    }
   } else {
     ctx.fillStyle = '#00ddff';
     ctx.font = '16px "Courier New"';
@@ -1301,7 +1520,11 @@ inv.alienBullets = inv.alienBullets.filter(b => {
 }
 
 exitGame() {
+  console.log('🚪 Exiting game:', this.currentGame);
+  
   this.currentGame = null;
+  this._lastGameState = null; // Reset state tracker
+  
   window.removeEventListener('keydown', this.gameKeyHandler);
   if (this.gameKeyUpHandler) {
     window.removeEventListener('keyup', this.gameKeyUpHandler);
@@ -1310,7 +1533,23 @@ exitGame() {
   this.scrollOffset = 0;
   this.targetScroll = this.selectedGame;
   
-  console.log('Returned to game selection menu');
+  // Hide game menu button
+  if (this.gameMenuBtn) {
+    this.gameMenuBtn.style.display = 'none';
+  }
+  
+  // Hide retry button if visible
+  const retryBtn = document.getElementById('btnRetry');
+  if (retryBtn) {
+    retryBtn.style.display = 'none';
+  }
+  
+  // Reset mobile controls to menu mode
+  if (window.showMobileControls) {
+    window.showMobileControls('menu');
+  }
+  
+  console.log('✅ Returned to game selection menu');
 }
 }
 // Make it globally available

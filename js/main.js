@@ -393,47 +393,57 @@ function setupMobileControls() {
                    ('ontouchstart' in window) || 
                    (navigator.maxTouchPoints > 0);
   
-  if (!isMobile) return; // Only create controls on mobile
+  if (!isMobile) return;
   
   console.log('📱 Mobile device detected - creating touch controls');
   
-  // Create mobile control container
+  // Force fullscreen on mobile
+  if (document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(err => {
+      console.log('Fullscreen request failed:', err);
+    });
+  }
+  
+  // Create mobile control container (BOTTOM CORNERS ONLY)
   const mobileControls = document.createElement('div');
   mobileControls.id = 'mobileControls';
   mobileControls.style.cssText = `
     position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     display: none;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
+    pointer-events: none;
     z-index: 1000;
-    opacity: 0;
-    transition: opacity 0.3s ease;
   `;
   
-  // D-pad container
-  const dpad = document.createElement('div');
-  dpad.style.cssText = `
+  // LEFT CORNER: D-pad container (4-directional)
+  const dpadContainer = document.createElement('div');
+  dpadContainer.id = 'dpadContainer';
+  dpadContainer.style.cssText = `
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
     display: grid;
     grid-template-columns: repeat(3, 60px);
     grid-template-rows: repeat(3, 60px);
     gap: 8px;
+    pointer-events: auto;
   `;
   
-  // Create buttons
-  const buttons = {
-    up: { row: 1, col: 2, symbol: '▲', keys: ['w', 'ArrowUp'] },
-    left: { row: 2, col: 1, symbol: '◄', keys: ['a', 'ArrowLeft'] },
-    down: { row: 3, col: 2, symbol: '▼', keys: ['s', 'ArrowDown'] },
-    right: { row: 2, col: 3, symbol: '►', keys: ['d', 'ArrowRight'] }
+  // Create D-pad buttons (UP, DOWN, LEFT, RIGHT)
+  const dpadButtons = {
+    up: { row: 1, col: 2, symbol: '▲', keys: ['w', 'ArrowUp'], id: 'btnUp' },
+    left: { row: 2, col: 1, symbol: '◄', keys: ['a', 'ArrowLeft'], id: 'btnLeft' },
+    down: { row: 3, col: 2, symbol: '▼', keys: ['s', 'ArrowDown'], id: 'btnDown' },
+    right: { row: 2, col: 3, symbol: '►', keys: ['d', 'ArrowRight'], id: 'btnRight' }
   };
   
-  Object.entries(buttons).forEach(([dir, config]) => {
+  Object.entries(dpadButtons).forEach(([dir, config]) => {
     const btn = document.createElement('button');
-    btn.className = 'mobile-btn';
+    btn.id = config.id;
+    btn.className = 'mobile-btn dpad-btn';
     btn.textContent = config.symbol;
     btn.style.cssText = `
       grid-row: ${config.row};
@@ -452,18 +462,15 @@ function setupMobileControls() {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       user-select: none;
       -webkit-tap-highlight-color: transparent;
+      pointer-events: auto;
     `;
     
-    // Touch events for each direction
     btn.addEventListener('touchstart', (e) => {
       e.preventDefault();
       btn.style.background = 'linear-gradient(135deg, rgba(94, 231, 223, 0.6) 0%, rgba(94, 200, 223, 0.5) 100%)';
       btn.style.transform = 'scale(0.95)';
-      
-      // Simulate keydown for each key
       config.keys.forEach(key => {
-        const event = new KeyboardEvent('keydown', { key, bubbles: true });
-        window.dispatchEvent(event);
+        window.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
       });
     });
     
@@ -471,27 +478,157 @@ function setupMobileControls() {
       e.preventDefault();
       btn.style.background = 'linear-gradient(135deg, rgba(94, 231, 223, 0.25) 0%, rgba(94, 200, 223, 0.2) 100%)';
       btn.style.transform = 'scale(1)';
-      
-      // Simulate keyup for each key
       config.keys.forEach(key => {
-        const event = new KeyboardEvent('keyup', { key, bubbles: true });
-        window.dispatchEvent(event);
+        window.dispatchEvent(new KeyboardEvent('keyup', { key, bubbles: true }));
       });
     });
     
-    dpad.appendChild(btn);
+    dpadContainer.appendChild(btn);
   });
   
-  // Enter button
+  // RIGHT CORNER: Action buttons container
+  const actionContainer = document.createElement('div');
+  actionContainer.id = 'actionContainer';
+  actionContainer.style.cssText = `
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+    pointer-events: auto;
+  `;
+  
+  // ENTER button (for menu navigation)
   const enterBtn = document.createElement('button');
+  enterBtn.id = 'btnEnter';
+  enterBtn.className = 'mobile-btn action-btn';
   enterBtn.textContent = 'ENTER';
   enterBtn.style.cssText = `
-    width: 140px;
+    width: 120px;
     height: 55px;
     border-radius: 12px;
     background: linear-gradient(135deg, rgba(94, 231, 223, 0.3) 0%, rgba(94, 200, 223, 0.25) 100%);
     border: 2px solid rgba(94, 231, 223, 0.6);
     color: #5ee7df;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    letter-spacing: 2px;
+    pointer-events: auto;
+  `;
+  
+  enterBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    enterBtn.style.background = 'linear-gradient(135deg, rgba(94, 231, 223, 0.7) 0%, rgba(94, 200, 223, 0.6) 100%)';
+    enterBtn.style.transform = 'scale(0.95)';
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  });
+  
+  enterBtn.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    enterBtn.style.background = 'linear-gradient(135deg, rgba(94, 231, 223, 0.3) 0%, rgba(94, 200, 223, 0.25) 100%)';
+    enterBtn.style.transform = 'scale(1)';
+  });
+  
+  // FIRE button (for Space Invaders - hidden by default)
+  const fireBtn = document.createElement('button');
+  fireBtn.id = 'btnFire';
+  fireBtn.className = 'mobile-btn action-btn';
+  fireBtn.textContent = 'FIRE';
+  fireBtn.style.cssText = `
+    width: 120px;
+    height: 55px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 68, 68, 0.3) 0%, rgba(255, 100, 100, 0.25) 100%);
+    border: 2px solid rgba(255, 68, 68, 0.6);
+    color: #ff4444;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    letter-spacing: 2px;
+    pointer-events: auto;
+    display: none;
+  `;
+  
+  fireBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    fireBtn.style.background = 'linear-gradient(135deg, rgba(255, 68, 68, 0.7) 0%, rgba(255, 100, 100, 0.6) 100%)';
+    fireBtn.style.transform = 'scale(0.95)';
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+  });
+  
+  fireBtn.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    fireBtn.style.background = 'linear-gradient(135deg, rgba(255, 68, 68, 0.3) 0%, rgba(255, 100, 100, 0.25) 100%)';
+    fireBtn.style.transform = 'scale(1)';
+  });
+  
+  // ROTATE button (for Tetris - hidden by default)
+  const rotateBtn = document.createElement('button');
+  rotateBtn.id = 'btnRotate';
+  rotateBtn.className = 'mobile-btn action-btn';
+  rotateBtn.textContent = 'ROTATE';
+  rotateBtn.style.cssText = `
+    width: 120px;
+    height: 55px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 170, 0, 0.3) 0%, rgba(255, 200, 0, 0.25) 100%);
+    border: 2px solid rgba(255, 170, 0, 0.6);
+    color: #ffaa00;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    letter-spacing: 1px;
+    pointer-events: auto;
+    display: none;
+  `;
+  
+  rotateBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    rotateBtn.style.background = 'linear-gradient(135deg, rgba(255, 170, 0, 0.7) 0%, rgba(255, 200, 0, 0.6) 100%)';
+    rotateBtn.style.transform = 'scale(0.95)';
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'w', bubbles: true }));
+  });
+  
+  rotateBtn.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    rotateBtn.style.background = 'linear-gradient(135deg, rgba(255, 170, 0, 0.3) 0%, rgba(255, 200, 0, 0.25) 100%)';
+    rotateBtn.style.transform = 'scale(1)';
+  });
+  
+  // RETRY button (hidden by default, shown on game over)
+  const retryBtn = document.createElement('button');
+  retryBtn.id = 'btnRetry';
+  retryBtn.className = 'mobile-btn';
+  retryBtn.textContent = 'RETRY';
+  retryBtn.style.cssText = `
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 140px;
+    height: 60px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.4) 0%, rgba(0, 200, 136, 0.3) 100%);
+    border: 3px solid rgba(0, 255, 136, 0.8);
+    color: #00ff88;
     font-size: 18px;
     font-weight: bold;
     cursor: pointer;
@@ -501,36 +638,92 @@ function setupMobileControls() {
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     letter-spacing: 2px;
+    pointer-events: auto;
+    display: none;
   `;
   
-  enterBtn.addEventListener('touchstart', (e) => {
+  retryBtn.addEventListener('touchstart', (e) => {
     e.preventDefault();
-    enterBtn.style.background = 'linear-gradient(135deg, rgba(94, 231, 223, 0.7) 0%, rgba(94, 200, 223, 0.6) 100%)';
-    enterBtn.style.transform = 'scale(0.95)';
-    
-    const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
-    window.dispatchEvent(event);
+    retryBtn.style.background = 'linear-gradient(135deg, rgba(0, 255, 136, 0.8) 0%, rgba(0, 200, 136, 0.7) 100%)';
+    retryBtn.style.transform = 'translateX(-50%) scale(0.95)';
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'r', bubbles: true }));
   });
   
-  enterBtn.addEventListener('touchend', (e) => {
+  retryBtn.addEventListener('touchend', (e) => {
     e.preventDefault();
-    enterBtn.style.background = 'linear-gradient(135deg, rgba(94, 231, 223, 0.3) 0%, rgba(94, 200, 223, 0.25) 100%)';
-    enterBtn.style.transform = 'scale(1)';
+    retryBtn.style.background = 'linear-gradient(135deg, rgba(0, 255, 136, 0.4) 0%, rgba(0, 200, 136, 0.3) 100%)';
+    retryBtn.style.transform = 'translateX(-50%) scale(1)';
   });
   
-  mobileControls.appendChild(dpad);
-  mobileControls.appendChild(enterBtn);
+  actionContainer.appendChild(enterBtn);
+  actionContainer.appendChild(fireBtn);
+  actionContainer.appendChild(rotateBtn);
+  
+  mobileControls.appendChild(dpadContainer);
+  mobileControls.appendChild(actionContainer);
+  mobileControls.appendChild(retryBtn);
   document.body.appendChild(mobileControls);
   
-  // Show/hide controls based on mode
-  window.showMobileControls = () => {
-    mobileControls.style.display = 'flex';
-    setTimeout(() => { mobileControls.style.opacity = '1'; }, 50);
+  // Global functions to show/hide/customize controls
+  window.showMobileControls = (mode = 'default') => {
+    mobileControls.style.display = 'block';
+    
+    // Hide ALL buttons first (clean slate)
+    document.getElementById('btnUp').style.display = 'none';
+    document.getElementById('btnDown').style.display = 'none';
+    document.getElementById('btnLeft').style.display = 'none';
+    document.getElementById('btnRight').style.display = 'none';
+    document.getElementById('btnEnter').style.display = 'none';
+    document.getElementById('btnFire').style.display = 'none';
+    document.getElementById('btnRotate').style.display = 'none';
+    document.getElementById('btnRetry').style.display = 'none';
+    
+    // Customize based on mode
+    if (mode === 'menu') {
+      // Menu: Only LEFT, RIGHT, ENTER
+      document.getElementById('btnLeft').style.display = 'block';
+      document.getElementById('btnRight').style.display = 'block';
+      document.getElementById('btnEnter').style.display = 'block';
+    } else if (mode === 'snake') {
+      // Snake: All 4 directions, no ENTER
+      document.getElementById('btnUp').style.display = 'block';
+      document.getElementById('btnDown').style.display = 'block';
+      document.getElementById('btnLeft').style.display = 'block';
+      document.getElementById('btnRight').style.display = 'block';
+    } else if (mode === 'pong') {
+      // Pong: Only UP, DOWN
+      document.getElementById('btnUp').style.display = 'block';
+      document.getElementById('btnDown').style.display = 'block';
+    } else if (mode === 'tetris') {
+      // Tetris: LEFT, RIGHT, DOWN, ROTATE
+      document.getElementById('btnLeft').style.display = 'block';
+      document.getElementById('btnRight').style.display = 'block';
+      document.getElementById('btnDown').style.display = 'block';
+      document.getElementById('btnRotate').style.display = 'block';
+    } else if (mode === 'invaders') {
+      // Space Invaders: LEFT, RIGHT, FIRE
+      document.getElementById('btnLeft').style.display = 'block';
+      document.getElementById('btnRight').style.display = 'block';
+      document.getElementById('btnFire').style.display = 'block';
+    }
   };
   
   window.hideMobileControls = () => {
-    mobileControls.style.opacity = '0';
-    setTimeout(() => { mobileControls.style.display = 'none'; }, 300);
+    mobileControls.style.display = 'none';
+  };
+  
+  window.showRetryButton = () => {
+    // Hide all game buttons
+    document.getElementById('btnUp').style.display = 'none';
+    document.getElementById('btnDown').style.display = 'none';
+    document.getElementById('btnLeft').style.display = 'none';
+    document.getElementById('btnRight').style.display = 'none';
+    document.getElementById('btnEnter').style.display = 'none';
+    document.getElementById('btnFire').style.display = 'none';
+    document.getElementById('btnRotate').style.display = 'none';
+    
+    // Show retry button
+    document.getElementById('btnRetry').style.display = 'block';
   };
 }
 
@@ -1560,6 +1753,7 @@ function exitFrameMode() {
 }
 
 function exitBoardMode() {
+  hideModeDialogue();
   hideCertificateBoard();
   playBoardAudio('./assets/audio/bo2.mp3');
   
@@ -1604,8 +1798,34 @@ function exitTVMode() {
   // Hide dialogue IMMEDIATELY
   hideModeDialogue();
   
+  // CRITICAL: Store current game state BEFORE deactivating
+  if (tvScreen && tvScreen.currentGame) {
+    console.log('📺 Storing game state:', tvScreen.currentGame);
+    tvScreen.wasInGame = true;
+    tvScreen.savedGameState = tvScreen.currentGame;
+  } else {
+    tvScreen.wasInGame = false;
+    tvScreen.savedGameState = null;
+  }
+  
   if (tvScreen) {
     tvScreen.deactivate();
+  }
+  
+  // CRITICAL: Hide ALL TV-related UI elements
+  if (tvScreen && tvScreen.gameMenuBtn) {
+    tvScreen.gameMenuBtn.style.display = 'none';
+  }
+  
+  // Hide mobile controls completely
+  if (window.hideMobileControls) {
+    window.hideMobileControls();
+  }
+  
+  // Hide retry button if it exists
+  const retryBtn = document.getElementById('btnRetry');
+  if (retryBtn) {
+    retryBtn.style.display = 'none';
   }
   
   // Return to normal mode
@@ -1621,11 +1841,11 @@ function exitTVMode() {
   
   // Animate camera back to normal view
   animateCameraTo(
-  1.8995096440842898, 1.2049732890027314, 1.1057035996481932,
-  -0.19339297685447426, 1.0415828316110889, 1.1253654180086836
-);
+    1.8995096440842898, 1.2049732890027314, 1.1057035996481932,
+    -0.19339297685447426, 1.0415828316110889, 1.1253654180086836
+  );
   
-  console.log("Exited TV mode to normal mode");
+  console.log("Exited TV mode to normal mode - Game state saved");
 }
 
 function enterShelfMode() {
@@ -3294,17 +3514,6 @@ function enterTVMode() {
   setTimeout(() => {
     showModeDialogue('tv');
   }, 2500);
-  
-  if (tvScreenMesh) {
-    console.log("TV screen mesh found:", tvScreenMesh.name);
-    console.log("TV screen visible:", tvScreenMesh.visible);
-    console.log("TV screen material:", tvScreenMesh.material?.type);
-  } else {
-    console.error("TV screen mesh is NULL!");
-  }
-  if (window.showMobileControls) {
-  window.showMobileControls();
-  }
 }
 
 function makePlayerMove(from, to) {
@@ -3489,7 +3698,7 @@ function animate() {
           block.animating = true;
         });
         
-      } else if (currentMode === 'tv') {
+     } else if (currentMode === 'tv') {
         controls.enabled = false;
         lockedCameraPos.copy(camera.position);
         lockedCameraTarget.copy(controls.target);
@@ -3499,9 +3708,9 @@ function animate() {
           tvScreen.activate();
         }
         
-        // Show mobile controls on mobile devices
+        // Show mobile controls for TV menu mode (LEFT, RIGHT, ENTER)
         if (window.showMobileControls) {
-          window.showMobileControls();
+          window.showMobileControls('menu');
         }
         
         console.log("📺 TV mode activated - camera locked, console OS ready");
