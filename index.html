@@ -12,9 +12,16 @@
     <link rel="stylesheet" href="./css/loading-screen.css" />
   </head>
   <body>
-    <!-- REMOVED: <div id="loading">Loading...</div> -->
-    
-    <!-- Chess Welcome Screen -->
+
+  <div id="cameraToggle">
+    <div class="toggle-container">
+      <span class="toggle-label">Camera</span>
+      <div class="toggle-switch" id="toggleSwitch">
+        <div class="toggle-slider"></div>
+      </div>
+    </div>
+  </div>
+
     <div id="chessWelcome">
       <h1>♟️ 3D Chess AI</h1>
       <p>Play against an AI trained on 791 features</p>
@@ -69,7 +76,6 @@
       </div>
     </div>
 
-    <button id="laptopExitBtn">✕</button>
     <!-- Asset Loading System -->
     <script src="./js/AssetLoader.js"></script>
     <script src="./js/LoadingScreen.js"></script>
