@@ -59,6 +59,8 @@ class LaptopScreen {
     };
     this.showPermissionMessage = false;
     this.permissionMessageTimer = 0;
+    this.permissionMessageText = '🔒 Access Denied';
+    this.permissionMessageSubtext = 'You don\'t have permission to access this folder';
     
     Object.entries(this.windows).forEach(([name, win]) => {
       this.originalWindowSizes[name] = { x: win.x, y: win.y, w: win.w, h: win.h };
@@ -550,20 +552,22 @@ class LaptopScreen {
         }
       });
     } else if (name === 'projects') {
-      const projects = [
-        { title: '3D Interactive Portfolio' },
-        { title: 'Chess AI Engine' },
-        { title: 'Analytics Dashboard' },
-        { title: 'Robotics Control System' }
-      ];
-      
-      projects.forEach((proj, i) => {
-        const itemY = contentY + i * 260;
-        if (x >= contentX && x <= contentX + maxWidth && 
-            y >= itemY && y <= itemY + 240) {
-          this.hoveredProjectItem = i;
-        }
-      });
+    const projects = [
+      { title: '3D Interactive Portfolio' },
+      { title: 'Voice Assistant with AI Support' },
+      { title: 'Resume Evaluator with Microsoft Azure' },
+      { title: 'Webots Trash Collection Robot' },
+      { title: 'STM32 Smart Irrigation' },
+      { title: 'Loan Approval Prediction' }
+    ];
+    
+    projects.forEach((proj, i) => {
+      const itemY = contentY + i * 260;
+      if (x >= contentX && x <= contentX + maxWidth && 
+          y >= itemY && y <= itemY + 240) {
+        this.hoveredProjectItem = i;
+      }
+    });
     } else if (name === 'contact') {
       const contacts = [
         { label: 'Email' },
@@ -581,19 +585,6 @@ class LaptopScreen {
           if (i !== 3) {
             this.hoveredContactItem = i;
           }
-        }
-      });
-    } else if (name === 'about') {
-      // Check GitHub, LinkedIn, Website links
-      const links = [
-        { y: contentY + 290 + 60 + 4 * 50, text: 'GitHub' },
-        { y: contentY + 290 + 60 + 5 * 50, text: 'LinkedIn' },
-        { y: contentY + 290 + 60 + 6 * 50, text: 'Website' }
-      ];
-      
-      links.forEach((link, i) => {
-        if (y >= link.y - 20 && y <= link.y + 20) {
-          this.hoveredContactItem = 10 + i; // Use 10+ to distinguish from contact window
         }
       });
     }
@@ -727,6 +718,36 @@ if (y < 100) {
   return;
 }
 }
+copyToClipboard(text) {
+  // Try using the modern clipboard API
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      console.log('Copied to clipboard:', text);
+    }).catch(err => {
+      console.error('Failed to copy:', err);
+      this.fallbackCopyToClipboard(text);
+    });
+  } else {
+    this.fallbackCopyToClipboard(text);
+  }
+}
+
+fallbackCopyToClipboard(text) {
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.left = '-999999px';
+  document.body.appendChild(textArea);
+  textArea.select();
+  try {
+    document.execCommand('copy');
+    console.log('Copied to clipboard (fallback):', text);
+  } catch (err) {
+    console.error('Fallback copy failed:', err);
+  }
+  document.body.removeChild(textArea);
+}
+
 handleWindowContentClick(name, win, x, y) {
 const contentY = win.y + 140 - win.scrollY;
 const contentX = win.x + 50;
@@ -749,16 +770,20 @@ if (name === 'fileManager') {
       } else {
         this.showPermissionMessage = true;
         this.permissionMessageTimer = Date.now();
+        this.permissionMessageText = '🔒 Access Denied';
+        this.permissionMessageSubtext = 'You don\'t have permission to access this folder';
         this.needsRedraw = true;
       }
     }
   });
-} else if (name === 'projects') {
+}  else if (name === 'projects') {
   const projects = [
-    { title: '3D Interactive Portfolio', url: 'https://github.com/yourusername/portfolio' },
-    { title: 'Chess AI Engine', url: 'https://github.com/yourusername/chess-ai' },
-    { title: 'Analytics Dashboard', url: 'https://github.com/yourusername/analytics' },
-    { title: 'Robotics Control System', url: 'https://github.com/yourusername/robotics' }
+    { title: '3D Interactive Portfolio', url: 'https://github.com/AdityaSuresh27/My-3d-portfolio' },
+    { title: 'Voice Assistant with AI Support', url: 'https://github.com/AdityaSuresh27/voice-assistant' },
+    { title: 'Resume Evaluator with Microsoft Azure', url: 'https://github.com/AdityaSuresh27/azure-gpt-resume-evaluator' },
+    { title: 'Webots Trash Collection Robot', url: 'https://github.com/AdityaSuresh27/trash-sorter-bot' },
+    { title: 'STM32 Smart Irrigation', url: 'https://github.com/AdityaSuresh27/Soil-Irrigation-Project' },
+    { title: 'Loan Approval Prediction', url: 'https://github.com/AdityaSuresh27/loan-approval-prediction-ml-streamlit' }
   ];
   
   projects.forEach((proj, i) => {
@@ -770,36 +795,33 @@ if (name === 'fileManager') {
   });
 } else if (name === 'contact') {
   const contacts = [
-    { label: 'Email', url: 'mailto:your.email@example.com' },
-    { label: 'GitHub', url: 'https://github.com/yourusername' },
-    { label: 'LinkedIn', url: 'https://linkedin.com/in/yourprofile' },
-    { label: 'Location', url: null },
-    { label: 'Website', url: 'https://yourwebsite.com' }
+    { label: 'Email', url: 'aditya8756354@gmail.com', isEmail: true },
+    { label: 'GitHub', url: 'https://github.com/AdityaSuresh27', isEmail: false },
+    { label: 'LinkedIn', url: 'https://www.linkedin.com/in/aditya-suresh-26b457298/', isEmail: false },
+    { label: 'Location', url: null, isEmail: false },
+    { label: 'Website', url: 'https://adityasuresh27.github.io/My-3d-portfolio/', isEmail: false }
   ];
   
   contacts.forEach((contact, i) => {
     const itemY = contentY + i * 140;
     if (x >= contentX && x <= contentX + win.w - 100 && 
         y >= itemY && y <= itemY + 120 && contact.url) {
-      window.open(contact.url, '_blank');
+      if (contact.isEmail) {
+        // Copy email to clipboard
+        this.copyToClipboard(contact.url);
+        // Show a brief message (optional)
+        this.showPermissionMessage = true;
+        this.permissionMessageTimer = Date.now();
+        this.permissionMessageText = '📋 Email Copied!';
+        this.needsRedraw = true;
+      } else {
+        window.open(contact.url, '_blank');
+      }
     }
   });
 } else if (name === 'about') {
-  // Check for clickable links in About section
-  const baseY = contentY + 290 + 60;
-  
-  // GitHub link (line 4)
-  if (y >= baseY + 4 * 50 - 20 && y <= baseY + 4 * 50 + 20) {
-    window.open('https://github.com/yourusername', '_blank');
-  }
-  // LinkedIn link (line 5)
-  else if (y >= baseY + 5 * 50 - 20 && y <= baseY + 5 * 50 + 20) {
-    window.open('https://linkedin.com/in/yourprofile', '_blank');
-  }
-  // Website link (line 6)
-  else if (y >= baseY + 6 * 50 - 20 && y <= baseY + 6 * 50 + 20) {
-    window.open('https://yourwebsite.com', '_blank');
-  }
+  // About page has no clickable elements
+  return;
 }
 }
 toggleWindow(name) {
@@ -1131,21 +1153,27 @@ if (this.showPermissionMessage) {
     const msgX = w / 2 - 300;
     const msgY = 200;
     
+   // Different color for success vs error
+  const isSuccess = this.permissionMessageText && this.permissionMessageText.includes('Copied');
+  if (isSuccess) {
+    ctx.fillStyle = 'rgba(76, 175, 80, 0.95)';
+  } else {
     ctx.fillStyle = 'rgba(193, 18, 31, 0.95)';
-    ctx.beginPath();
-    ctx.roundRect(msgX, msgY, 600, 100, 16);
-    ctx.fill();
-    
-    ctx.strokeStyle = 'rgba(230, 57, 70, 0.8)';
+  }
+  ctx.beginPath();
+  ctx.roundRect(msgX, msgY, 600, 100, 16);
+  ctx.fill();
+
+  ctx.strokeStyle = isSuccess ? 'rgba(76, 175, 80, 0.8)' : 'rgba(230, 57, 70, 0.8)';
     ctx.lineWidth = 3;
     ctx.stroke();
     
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 38px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('🔒 Access Denied', w / 2, msgY + 42);
+    ctx.fillText(this.permissionMessageText || '🔒 Access Denied', w / 2, msgY + 42);
     ctx.font = '28px Arial';
-    ctx.fillText('You don\'t have permission to access this folder', w / 2, msgY + 75);
+    ctx.fillText(this.permissionMessageSubtext || 'Action completed', w / 2, msgY + 75);
     ctx.textAlign = 'left';
     
     ctx.restore();
@@ -1362,8 +1390,10 @@ if (name === 'fileManager') {
   });
   
 } else if (name === 'about') {
-  // Calculate scroll height
-  const totalHeight = 290 + 60 + 9 * 50;
+// Calculate total content height for scrolling
+  const profileCardHeight = 240;
+  const aboutSectionHeight = 60 + 25 * 50;
+  const totalHeight = 290 + profileCardHeight + aboutSectionHeight + 100; 
   const visibleHeight = win.h - 140;
   win.maxScrollY = Math.max(0, totalHeight - visibleHeight);
 
@@ -1388,13 +1418,13 @@ ctx.fill();
   ctx.textAlign = 'left';
   
   ctx.font = 'bold 56px Arial';
-  ctx.fillText('Your Name', contentX + 200, contentY + 68);
+  ctx.fillText('Aditya Suresh', contentX + 200, contentY + 68);
   ctx.font = '36px Arial';
   ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
   ctx.fillText('Frontend, ML & Robotics Specialist', contentX + 200, contentY + 118);
   ctx.font = '32px Arial';
   ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-  ctx.fillText('📍 Your City, Country', contentX + 200, contentY + 165);
+  ctx.fillText('📍 Kerala, India', contentX + 200, contentY + 165);
   
   // BIGGER ABOUT SECTION
   const aboutY = contentY + 290;
@@ -1403,47 +1433,43 @@ ctx.fill();
   ctx.fillText('About Me', contentX, aboutY);
   ctx.font = '34px Arial';
   ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-  const lines = [
-    'Passionate developer specializing in creating immersive 3D web',
-    'experiences and intelligent applications. I love pushing the',
-    'boundaries of web technology and exploring innovative solutions.',
+const lines = [
+    'Developer who enjoys building things and figuring them out along the way.',
+    'I spend a lot of time experimenting, breaking things, and learning from it.',
+    'I enjoy creative works, stemming from my love of stories and games.',
+    'In fact, I believe this complete 3D website that took more than a month to build,',
+    'stemmed from my passion for it.',
     '',
-    '  • GitHub: github.com/yourusername',
-    '  • LinkedIn: linkedin.com/in/yourprofile',
-    '  • Website: yourwebsite.com',
+    'Background:',
+    '  • Currently pursuing B.Tech in Computer Science',
+    '  • Also taking a minor in Robotics and Automation',
+    '  • Passionate about blending creativity with technical innovation',
     '',
     'What I Do:',
-    '  • Build interactive 3D experiences with Three.js & WebGL'
+    '  • Build interactive 3D experiences with Three.js & WebGL',
+    '  • Develop AI/ML applications and intelligent systems',
+    '  • Design and experiment with game mechanics and simulations',
+    '  • Work with robotics, embedded systems and simulators',
+    '  • Implement computer vision and neural network solutions',
+    '',
+    'Technical Interests:',
+    '  • WebGL & 3D Graphics Programming',
+    '  • Machine Learning & Neural Networks',
+    '  • Robotics & Autonomous Systems',
+    '  • Game Development & Interactive Experiences',
+    '  • Real-time Systems & Performance Optimization',
+    '',
+    'Beyond Code:',
+    '  • Avid reader of sci-fi and fantasy literature',
+    '  • Gaming enthusiast with interest in game design theory',
+    '  • Enjoy exploring the intersection of art and technology'
   ];
-  
   lines.forEach((line, i) => {
     const lineY = aboutY + 60 + i * 50;
-    const isGitHub = i === 4 && this.hoveredContactItem === 10;
-    const isLinkedIn = i === 5 && this.hoveredContactItem === 11;
-    const isWebsite = i === 6 && this.hoveredContactItem === 12;
-    
-    if (isGitHub || isLinkedIn || isWebsite) {
-      ctx.fillStyle = '#e63946';
-      ctx.fillText('›', contentX, lineY);
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)';
-    } else {
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-    }
-    
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
     ctx.fillText(line, contentX, lineY);
   });
   
-  // Additional lines
-  const additionalLines = [
-    '  • Develop AI-powered applications and ML models',
-    '  • Create robotics systems and embedded solutions',
-    '  • Design beautiful, responsive user interfaces'
-  ];
-  
-  additionalLines.forEach((line, i) => {
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-    ctx.fillText(line, contentX, aboutY + 60 + (lines.length + i) * 50);
-  });
   
 } else if (name === 'skills') {
   const skills = [
@@ -1486,25 +1512,43 @@ ctx.fill();
       title: '3D Interactive Portfolio', 
       desc: 'Immersive portfolio with chess AI and functional laptop OS', 
       tech: ['Three.js', 'WebGL', 'AI'],
-      status: '✓ Live'
+      status: '✓ Live',
+      url: 'https://github.com/AdityaSuresh27/My-3d-portfolio'
     },
     { 
-      title: 'Chess AI Engine', 
-      desc: 'Neural network chess with strategic evaluation', 
-      tech: ['TensorFlow', 'Python', 'ML'],
-      status: '✓ Complete'
+      title: 'Voice Assistant with AI Support', 
+      desc: 'Intelligent voice assistant with natural language processing', 
+      tech: ['Python', 'NLP', 'AI'],
+      status: '✓ Complete',
+      url: 'https://github.com/AdityaSuresh27/voice-assistant'
     },
     { 
-      title: 'Analytics Dashboard', 
-      desc: 'Real-time dashboard with WebSocket and live visualization', 
-      tech: ['React', 'Node.js', 'D3.js'],
-      status: '⚡ Active'
+      title: 'Resume Evaluator with Microsoft Azure', 
+      desc: 'AI-powered resume analysis using Azure OpenAI Services', 
+      tech: ['Azure', 'Python', 'ML'],
+      status: '✓ Complete',
+      url: 'https://github.com/AdityaSuresh27/azure-gpt-resume-evaluator'
     },
     { 
-      title: 'Robotics Control System', 
-      desc: 'Autonomous robot navigation with sensor fusion', 
-      tech: ['C++', 'ROS', 'Embedded'],
-      status: '✓ Live'
+      title: 'Webots Trash Collection Robot', 
+      desc: 'Autonomous trash sorting robot with computer vision', 
+      tech: ['Webots', 'Python', 'CV'],
+      status: '✓ Complete',
+      url: 'https://github.com/AdityaSuresh27/trash-sorter-bot'
+    },
+    { 
+      title: 'STM32 Smart Irrigation',
+      desc: 'Monitors soil, temperature, and humidity with automatic watering and OLED display',
+      tech: ['STM32F4', 'C', 'DHT11', 'Soil Sensor'],
+      status: '✓ Complete',
+      url: 'https://github.com/AdityaSuresh27/Soil-Irrigation-Project'
+    },
+    { 
+      title: 'Loan Approval Prediction',
+      desc: 'Predicts loan approval using a simple ML web app',
+      tech: ['Python', 'TensorFlow', 'Streamlit', 'ML'],
+      status: '✓ Complete',
+      url: 'https://github.com/AdityaSuresh27/loan-approval-prediction-ml-streamlit'
     }
   ];
   
@@ -1555,11 +1599,11 @@ ctx.fill();
   
 } else if (name === 'contact') {
   const contacts = [
-    { icon: '✉', label: 'Email', value: 'your.email@example.com' },
-    { icon: '💻', label: 'GitHub', value: 'github.com/yourusername' },
-    { icon: '💼', label: 'LinkedIn', value: 'linkedin.com/in/yourprofile' },
-    { icon: '📍', label: 'Location', value: 'Your City, Country' },
-    { icon: '🌐', label: 'Website', value: 'yourwebsite.com' }
+    { icon: '✉', label: 'Email', value: 'aditya8756354@gmail.com' },
+    { icon: '💻', label: 'GitHub', value: 'https://github.com/AdityaSuresh27' },
+    { icon: '💼', label: 'LinkedIn', value: 'https://www.linkedin.com/in/aditya-suresh-26b457298/' },
+    { icon: '📍', label: 'Location', value: 'Kerala, India' },
+    { icon: '🌐', label: 'Website', value: 'https://adityasuresh27.github.io/My-3d-portfolio/' }
   ];
   
   const totalHeight = contacts.length * 140;
