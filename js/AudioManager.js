@@ -105,32 +105,30 @@ class AudioManager {
     const wasPlaying = this.isPlaying;
     
     if (wasPlaying) {
-      // Fade out current track
       await this.fadeVolume(0, 800);
       this.audio.pause();
     }
     
-    this.currentTrackIndex = index;
     this.audio.src = this.tracks[index].path;
     this.audio.currentTime = 0;
     
     if (wasPlaying) {
       await this.audio.play();
-      // Fade in new track
       await this.fadeVolume(this.targetVolume, 800);
     }
     
-    console.log('🎵 Switched to:', this.tracks[index].name);
   }
   
   nextTrack() {
-    const nextIndex = (this.currentTrackIndex + 1) % this.tracks.length;
-    this.setTrack(nextIndex);
+    this.currentTrackIndex = (this.currentTrackIndex + 1) % this.tracks.length;
+    this.setTrack(this.currentTrackIndex);
+    return this.tracks[this.currentTrackIndex]; // Return new track immediately
   }
   
   prevTrack() {
-    const prevIndex = (this.currentTrackIndex - 1 + this.tracks.length) % this.tracks.length;
-    this.setTrack(prevIndex);
+    this.currentTrackIndex = (this.currentTrackIndex - 1 + this.tracks.length) % this.tracks.length;
+    this.setTrack(this.currentTrackIndex);
+    return this.tracks[this.currentTrackIndex]; // Return new track immediately
   }
   
   // NEW: Set volume INSTANTLY (for radio knob)

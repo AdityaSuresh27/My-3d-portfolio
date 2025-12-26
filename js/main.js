@@ -1162,11 +1162,11 @@ function setupRadioPanel() {
       
       if (Math.abs(delta) > 30) {
         if (delta > 0 && window.audioManager) {
-          window.audioManager.nextTrack();
+          window.audioManager.nextTrack(); 
           updateTrackDisplay();
         } else if (delta < 0 && window.audioManager) {
-          window.audioManager.prevTrack();
-          updateTrackDisplay();
+          window.audioManager.prevTrack(); 
+          updateTrackDisplay(); 
         }
         startAngle = angle;
       }
@@ -1192,17 +1192,17 @@ function setupRadioPanel() {
     }
   });
   
-  document.getElementById('prevBtn').addEventListener('click', () => {
+ document.getElementById('prevBtn').addEventListener('click', () => {
     if (window.audioManager) {
-      window.audioManager.prevTrack();
-      updateTrackDisplay();
+      window.audioManager.prevTrack(); 
+      updateTrackDisplay(); 
     }
   });
   
   document.getElementById('nextBtn').addEventListener('click', () => {
     if (window.audioManager) {
-      window.audioManager.nextTrack();
-      updateTrackDisplay();
+      window.audioManager.nextTrack();  
+      updateTrackDisplay();  
     }
   });
   
@@ -1241,6 +1241,11 @@ function updateTrackDisplay() {
   const trackName = document.getElementById('currentTrackName');
   if (trackName && window.audioManager) {
     const track = window.audioManager.getCurrentTrack();
+    
+    trackName.style.animation = 'none';
+    trackName.offsetHeight; 
+    trackName.style.animation = 'trackChange 0.4s ease';
+
     trackName.textContent = track.name;
   }
 }
