@@ -12,6 +12,9 @@ let mouse = new THREE.Vector2();
 let currentMode = 'normal'; // 'normal', 'sofa', 'chess', 'family', 'laptop', 'desk', 'frame'
 let previousMode = null; // Track mode history for exit button
 let hoverEnabled = true;
+let cameraControlEnabled = false; 
+let normalModeCameraPos = new THREE.Vector3(1.8995096440842898, 1.2049732890027314, 1.1057035996481932);
+let normalModeCameraTarget = new THREE.Vector3(-0.19339297685447426, 1.0415828316110889, 1.1253654180086836);
 
 let selectable = [];
 let laptopParts = [];
@@ -320,6 +323,7 @@ function init() {
   setupDialogueSystem();
   setupCertificateBoard();
   setupRadioPanel();
+  setupCameraToggle();
   setupMobileControls();
 }
 
@@ -385,6 +389,46 @@ document.addEventListener('keydown', (e) => {
     exitCurrentMode();
   }
 });
+}
+
+function setupCameraToggle() {
+  const toggleSwitch = document.getElementById('toggleSwitch');
+  const toggleContainer = document.querySelector('.toggle-container');
+  
+  if (!toggleSwitch) return;
+  
+  // Click on entire container (not just switch)
+  toggleContainer.addEventListener('click', () => {
+    cameraControlEnabled = !cameraControlEnabled;
+    
+    if (cameraControlEnabled) {
+      // UNLOCK camera - enable controls
+      toggleSwitch.classList.add('active');
+      controls.enabled = true;
+      controls.enablePan = true;
+      controls.enableZoom = true;
+      controls.enableRotate = true;
+      controls.enableDamping = true;
+      console.log('📷 Camera controls UNLOCKED');
+    } else {
+      // LOCK camera - disable controls AND return to default position
+      toggleSwitch.classList.remove('active');
+      
+      // CRITICAL: Disable ALL controls
+      controls.enabled = false;
+      controls.enablePan = false;
+      controls.enableZoom = false;
+      controls.enableRotate = false;
+      
+      // Animate back to normal position
+      animateCameraTo(
+        normalModeCameraPos.x, normalModeCameraPos.y, normalModeCameraPos.z,
+        normalModeCameraTarget.x, normalModeCameraTarget.y, normalModeCameraTarget.z
+      );
+      
+    }
+  });
+
 }
 
 function setupMobileControls() {
@@ -1557,6 +1601,11 @@ function exitCurrentMode() {
   
   hideModeDialogue();
   
+  const cameraToggle = document.getElementById('cameraToggle');
+  if (cameraToggle) {
+    cameraToggle.classList.remove('active');
+  }
+  
   // Hide all outlines
   outlineMeshes.forEach(o => (o.visible = false));
   sofaOutlineMeshes.forEach(o => (o.visible = false));
@@ -1581,7 +1630,7 @@ function exitCurrentMode() {
     exitSofaMode();
   } else if (currentMode === 'desk') {
     exitDeskMode();
- } else if (currentMode === 'frame') {
+  } else if (currentMode === 'frame') {
     exitFrameMode();
   } else if (currentMode === 'board') {
     exitBoardMode();
@@ -1598,14 +1647,6 @@ function exitLaptopMode() {
   if (laptopScreen) {
     laptopScreen.deactivate();
   }
-  
-  // Hide laptop UI
-  const laptopExitBtn = document.getElementById('laptopExitBtn');
-  const laptopModeIndicator = document.getElementById('laptopModeIndicator');
-  const laptopHint = document.getElementById('laptopHint');
-  if (laptopExitBtn) laptopExitBtn.classList.remove('active');
-  if (laptopModeIndicator) laptopModeIndicator.classList.remove('active');
-  if (laptopHint) laptopHint.classList.remove('active');
   
   currentMode = 'desk';
   previousMode = null;
@@ -1706,8 +1747,11 @@ function exitSofaMode() {
   1.8995096440842898, 1.2049732890027314, 1.1057035996481932,
   -0.19339297685447426, 1.0415828316110889, 1.1253654180086836
 );
-  
-  console.log("Exited sofa mode to normal mode");
+  // Show camera toggle when returning to normal
+  const cameraToggle = document.getElementById('cameraToggle');
+  if (cameraToggle) {
+    cameraToggle.classList.add('active');
+  }
 }
 
 function exitDeskMode() {
@@ -1729,8 +1773,10 @@ function exitDeskMode() {
   1.8995096440842898, 1.2049732890027314, 1.1057035996481932,
   -0.19339297685447426, 1.0415828316110889, 1.1253654180086836
 );
-  
-  console.log("Exited desk mode to normal mode");
+  const cameraToggle = document.getElementById('cameraToggle');
+  if (cameraToggle) {
+    cameraToggle.classList.add('active');
+  }
 }
 
 function exitFrameMode() {
@@ -1793,8 +1839,11 @@ function exitBoardMode() {
   1.8995096440842898, 1.2049732890027314, 1.1057035996481932,
   -0.19339297685447426, 1.0415828316110889, 1.1253654180086836
 );
+    const cameraToggle = document.getElementById('cameraToggle');
+    if (cameraToggle) {
+      cameraToggle.classList.add('active');
+    }
       
-      console.log("Exited board mode to normal mode");
     }, Math.max(audioDuration, 1200)); 
   });
 }
@@ -1849,12 +1898,16 @@ function exitTVMode() {
     1.8995096440842898, 1.2049732890027314, 1.1057035996481932,
     -0.19339297685447426, 1.0415828316110889, 1.1253654180086836
   );
-  
-  console.log("Exited TV mode to normal mode - Game state saved");
+  const cameraToggle = document.getElementById('cameraToggle');
+  if (cameraToggle) {
+    cameraToggle.classList.add('active');
+  }
 }
 
 function enterShelfMode() {
   currentMode = 'shelf';
+  const cameraToggle = document.getElementById('cameraToggle');
+  if (cameraToggle) cameraToggle.classList.remove('active');
   previousMode = 'normal';
   hoverEnabled = true;
   shelfOutlineMeshes.forEach(item => (item.mesh.visible = false));
@@ -1905,8 +1958,10 @@ function exitShelfMode() {
   1.8995096440842898, 1.2049732890027314, 1.1057035996481932,
   -0.19339297685447426, 1.0415828316110889, 1.1253654180086836
 );
-  
-  console.log("Exited shelf mode to normal mode");
+  const cameraToggle = document.getElementById('cameraToggle');
+  if (cameraToggle) {
+    cameraToggle.classList.add('active');
+  }
 }
 
 function onMouseWheel(event) {
@@ -2994,13 +3049,20 @@ if (chessBoard) {
   console.log('Chess board scale:', chessBoard.scale);
   console.log('Outline mesh scale:', outlineMesh.scale);
 }
-      console.log("✅ Scene loaded successfully");
       
       // Mark GLB as loaded
       if (window.assetLoader) {
         window.assetLoader.assetLoaded();
       }
       
+      controls.enabled = false;
+      controls.enablePan = false;
+      controls.enableZoom = false;
+      const cameraToggle = document.getElementById('cameraToggle');
+      if (cameraToggle) {
+        cameraToggle.classList.add('active');
+      }
+
      // Show intro dialogue AFTER loading transition completes
       setTimeout(() => {
         if (!hasSeenIntroDialogue) {
@@ -3298,6 +3360,8 @@ function enterLaptopMode() {
   const fromDesk = (currentMode === 'desk');
   
   currentMode = 'laptop';
+  const cameraToggle = document.getElementById('cameraToggle');
+  if (cameraToggle) cameraToggle.classList.remove('active');
   previousMode = fromDesk ? 'desk' : 'normal';
   hoverEnabled = false;
   outlineMeshes.forEach(o => (o.visible = false));
@@ -3308,16 +3372,6 @@ function enterLaptopMode() {
   if (laptopScreen) {
     laptopScreen.activate();
   }
-  
-  const laptopExitBtn = document.getElementById('laptopExitBtn');
-  const laptopModeIndicator = document.getElementById('laptopModeIndicator');
-  const laptopHint = document.getElementById('laptopHint');
-  
-  if (laptopModeIndicator) laptopModeIndicator.style.display = 'none';
-if (laptopHint) laptopHint.style.display = 'none';
-
-  if (laptopExitBtn) laptopExitBtn.classList.add('active');
-  if (laptopModeIndicator) laptopModeIndicator.classList.add('active');
   
   showExitButton();
   
@@ -3340,6 +3394,8 @@ if (laptopHint) laptopHint.style.display = 'none';
 
 function enterSofaMode() {
   currentMode = 'sofa';
+  const cameraToggle = document.getElementById('cameraToggle');
+  if (cameraToggle) cameraToggle.classList.remove('active');
   previousMode = 'normal';
   hoverEnabled = true;
   sofaOutlineMeshes.forEach(item => (item.mesh.visible = false));
@@ -3421,6 +3477,8 @@ function enterFamilyMode() {
 
 function enterDeskMode() {
   currentMode = 'desk';
+  const cameraToggle = document.getElementById('cameraToggle');
+  if (cameraToggle) cameraToggle.classList.remove('active');
   previousMode = 'normal';
   hoverEnabled = true;
   deskOutlineMeshes.forEach(item => (item.mesh.visible = false));
@@ -3473,6 +3531,8 @@ function enterFrameMode() {
 
 function enterBoardMode() {
   currentMode = 'board';
+  const cameraToggle = document.getElementById('cameraToggle');
+  if (cameraToggle) cameraToggle.classList.remove('active');
   previousMode = 'normal';
   hoverEnabled = false;
   boardOutlineMeshes.forEach(item => (item.mesh.visible = false));
@@ -3499,6 +3559,8 @@ function enterBoardMode() {
 
 function enterTVMode() {
   currentMode = 'tv';
+  const cameraToggle = document.getElementById('cameraToggle');
+  if (cameraToggle) cameraToggle.classList.remove('active');
   previousMode = 'normal';
   hoverEnabled = false;
   tvOutlineMeshes.forEach(item => (item.mesh.visible = false));
@@ -3733,7 +3795,13 @@ function animate() {
     }
   }
   else if (currentMode === 'normal') {
-    controls.update();
+    if (cameraControlEnabled) {
+      controls.update();
+    } else {
+      camera.position.lerp(normalModeCameraPos, 0.05);
+      controls.target.lerp(normalModeCameraTarget, 0.05);
+      controls.update();
+    }
   }
   else if (currentMode !== 'normal' && currentMode !== 'shelf') {
     camera.position.lerp(lockedCameraPos, 0.05);
