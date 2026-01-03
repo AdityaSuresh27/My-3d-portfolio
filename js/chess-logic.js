@@ -86,9 +86,15 @@ class ChessGame {
   }
   
   getPieceAt(square) {
-    const [file, rank] = this.squareToIndices(square);
-    return this.board[rank][file];
+  const [file, rank] = this.squareToIndices(square);
+  
+  if (rank < 0 || rank > 7 || file < 0 || file > 7) {
+    console.warn(`⚠️ Invalid square: ${square}`);
+    return null;
   }
+  
+  return this.board[rank][file];
+}
   
   setPieceAt(square, piece) {
     const [file, rank] = this.squareToIndices(square);
@@ -327,11 +333,21 @@ class ChessGame {
   }
   
   makeMove(from, to, promotionPiece = null) {
-    const [fromFile, fromRank] = this.squareToIndices(from);
-    const [toFile, toRank] = this.squareToIndices(to);
-    
-    const piece = this.board[fromRank][fromFile];
-    const captured = this.board[toRank][toFile];
+  const [fromFile, fromRank] = this.squareToIndices(from);
+  const [toFile, toRank] = this.squareToIndices(to);
+  
+  const piece = this.board[fromRank][fromFile];
+  
+  // CRITICAL: Validate piece exists
+  if (!piece) {
+    console.error(`❌ No piece at ${from}!`);
+    console.log('Board state:', this.board[fromRank]);
+    console.log('squareToPieceName:', this.squareToPieceName);
+    console.log('pieceNameMap:', this.pieceNameMap);
+    return null;
+  }
+  
+  const captured = this.board[toRank][toFile];
     
     let capturedPieceName = null;
     if (captured) {
@@ -339,15 +355,20 @@ class ChessGame {
     }
     
     // Handle en passant capture
-    let enPassantCapture = null;
-    if (piece.type.toLowerCase() === 'p' && to === this.enPassantTarget && !captured) {
-      const captureRank = piece.color === 'white' ? toRank - 1 : toRank + 1;
-      const captureSquare = this.indicesToSquare(toFile, captureRank);
-      enPassantCapture = this.board[captureRank][toFile];
-      capturedPieceName = this.squareToPieceName[captureSquare];
-      this.board[captureRank][toFile] = null;
-      delete this.squareToPieceName[captureSquare];
-    }
+let enPassantCapture = null;
+if (piece.type.toLowerCase() === 'p' && to === this.enPassantTarget && !captured) {
+  const captureRank = piece.color === 'white' ? toRank - 1 : toRank + 1;
+  const captureSquare = this.indicesToSquare(toFile, captureRank);
+  enPassantCapture = this.board[captureRank][toFile];
+  capturedPieceName = this.squareToPieceName[captureSquare];
+  this.board[captureRank][toFile] = null;
+  delete this.squareToPieceName[captureSquare];
+  
+  // CRITICAL FIX: Also remove from pieceNameMap
+  if (capturedPieceName && this.pieceNameMap[capturedPieceName]) {
+    delete this.pieceNameMap[capturedPieceName];
+  }
+}
     
     // Handle castling
     let castlingRookMove = null;
@@ -366,7 +387,11 @@ class ChessGame {
       const rookName = this.squareToPieceName[rookFromSquare];
       delete this.squareToPieceName[rookFromSquare];
       this.squareToPieceName[rookToSquare] = rookName;
-      
+
+      if (rookName && this.pieceNameMap[rookName]) {
+        this.pieceNameMap[rookName].square = rookToSquare;
+      }
+
       castlingRookMove = { from: rookFromSquare, to: rookToSquare, name: rookName };
     }
     
@@ -377,12 +402,18 @@ class ChessGame {
     
     // Handle pawn promotion
     let needsPromotion = false;
-    if (piece.type.toLowerCase() === 'p') {
+    if (piece && piece.type && piece.type.toLowerCase() === 'p') {
       const promotionRank = piece.color === 'white' ? 7 : 0;
       if (toRank === promotionRank) {
         needsPromotion = true;
         if (promotionPiece) {
           piece.type = promotionPiece;
+          this.board[toRank][toFile].type = promotionPiece;
+          const pieceName = this.squareToPieceName[to];
+          if (pieceName && this.pieceNameMap[pieceName]) {
+            this.pieceNameMap[pieceName].type = promotionPiece;
+            console.log(`✅ Promoted ${pieceName} to ${promotionPiece} in pieceNameMap`);
+          }
         }
       }
     }
@@ -394,11 +425,32 @@ class ChessGame {
       this.enPassantTarget = this.indicesToSquare(fromFile, epRank);
     }
     
-    const pieceName = this.squareToPieceName[from];
-    if (pieceName) {
-      delete this.squareToPieceName[from];
-      this.squareToPieceName[to] = pieceName;
-    }
+const pieceName = this.squareToPieceName[from];
+if (pieceName) {
+  delete this.squareToPieceName[from];
+  this.squareToPieceName[to] = pieceName;
+  
+  // CRITICAL: Update pieceNameMap square location
+  if (this.pieceNameMap[pieceName]) {
+    this.pieceNameMap[pieceName].square = to;
+    
+    // IMPORTANT: Don't update type here - it's handled in promotion section
+    console.log(`✅ Updated ${pieceName} position: ${from} → ${to}`);
+  }
+}
+
+// Handle captured piece - remove from both maps
+if (capturedPieceName) {
+  delete this.squareToPieceName[to]; // Remove old mapping first
+  if (this.pieceNameMap[capturedPieceName]) {
+    delete this.pieceNameMap[capturedPieceName];
+    console.log(`✅ Removed captured piece ${capturedPieceName} from pieceNameMap`);
+  }
+  // Re-add the moving piece to the 'to' square
+  if (pieceName) {
+    this.squareToPieceName[to] = pieceName;
+  }
+}
     
     this.moveHistory.push({ from, to, piece, captured, enPassantCapture });
     

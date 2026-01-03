@@ -19,16 +19,16 @@ let normalModeCameraTarget = new THREE.Vector3(-0.19339297685447426, 1.041582831
 let selectable = [];
 let laptopParts = [];
 let sofaParts = []; // Bean bags, table
-let deskParts = []; // Desk mode objects
+let deskParts = [];
 let deskOutlineMeshes = [];
 let frameParts = []; // Game and fantasy frames
 let frameOutlineMeshes = [];
-let boardParts = []; // Board mode objects
+let boardParts = []; 
 let boardOutlineMeshes = [];
 let blockRotations = {}; // Store original rotations for blocks
 let blockAnimating = false; // Track if blocks are animating
-let boardAudio = null; // Audio for board rotation
-let tvParts = []; // TV mode objects
+let boardAudio = null; 
+let tvParts = []; 
 let tvOutlineMeshes = [];
 
 // Shelf mode variables
@@ -131,8 +131,11 @@ let chessInteractions = null;
 let chessAnimations = null;
 let pieceObjects = {};
 let gameStarted = false;
+let isResetting = false;
+let isAnimating = false;
 let pendingPromotionMove = null;
 let moveCount = 0;
+let isProcessingMove = false;
 
 let dialogueBox = null;
 let dialogueText = null;
@@ -958,65 +961,86 @@ function setupCertificateBoard() {
   document.head.appendChild(style);
   
   certificates.forEach((cert, index) => {
-    const card = document.createElement('div');
-    card.style.cssText = `
-      background: linear-gradient(135deg, rgba(94, 231, 223, 0.08) 0%, rgba(180, 144, 202, 0.08) 100%);
-      border: 2px solid rgba(94, 231, 223, 0.3);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 18px;
-      transition: all 0.3s ease;
-      cursor: default;
-    `;
-    
-    card.addEventListener('mouseenter', () => {
-      card.style.borderColor = 'rgba(94, 231, 223, 0.8)';
-      card.style.transform = 'translateX(5px)';
-      card.style.boxShadow = '0 10px 30px rgba(94, 231, 223, 0.2)';
+  const card = document.createElement('div');
+  card.style.cssText = `
+    background: linear-gradient(135deg, rgba(94, 231, 223, 0.08) 0%, rgba(180, 144, 202, 0.08) 100%);
+    border: 2px solid rgba(94, 231, 223, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 18px;
+    transition: all 0.3s ease;
+    cursor: ${cert.link ? 'pointer' : 'default'};
+  `;
+  
+  // Make entire card clickable if link exists
+  if (cert.link) {
+    card.addEventListener('click', () => {
+      window.open(cert.link, '_blank');
     });
-    
-    card.addEventListener('mouseleave', () => {
-      card.style.borderColor = 'rgba(94, 231, 223, 0.3)';
-      card.style.transform = 'translateX(0)';
-      card.style.boxShadow = 'none';
-    });
-    
-    const certTitle = document.createElement('h3');
-    certTitle.style.cssText = `
-      margin: 0 0 8px 0;
-      font-family: 'Courier New', monospace;
-      font-size: 20px;
-      font-weight: bold;
-      color: #5ee7df;
-      text-shadow: 0 0 10px rgba(94, 231, 223, 0.3);
-    `;
-    certTitle.textContent = cert.title;
-    
-    const certIssuer = document.createElement('div');
-    certIssuer.style.cssText = `
-      margin: 0 0 6px 0;
-      font-family: 'Segoe UI', sans-serif;
-      font-size: 14px;
-      color: rgba(180, 144, 202, 0.9);
-      font-weight: 600;
-    `;
-    certIssuer.textContent = `${cert.issuer} • ${cert.date}`;
-    
-    const certDesc = document.createElement('p');
-    certDesc.style.cssText = `
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      font-size: 15px;
-      line-height: 1.6;
-      color: rgba(255, 255, 255, 0.8);
-    `;
-    certDesc.textContent = cert.description;
-    
-    card.appendChild(certTitle);
-    card.appendChild(certIssuer);
-    card.appendChild(certDesc);
-    scrollContainer.appendChild(card);
+  }
+  
+  card.addEventListener('mouseenter', () => {
+    card.style.borderColor = 'rgba(94, 231, 223, 0.8)';
+    card.style.transform = 'translateX(5px)';
+    card.style.boxShadow = '0 10px 30px rgba(94, 231, 223, 0.2)';
   });
+  
+  card.addEventListener('mouseleave', () => {
+    card.style.borderColor = 'rgba(94, 231, 223, 0.3)';
+    card.style.transform = 'translateX(0)';
+    card.style.boxShadow = 'none';
+  });
+  
+  const certTitle = document.createElement('h3');
+  certTitle.style.cssText = `
+    margin: 0 0 8px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 20px;
+    font-weight: bold;
+    color: #5ee7df;
+    text-shadow: 0 0 10px rgba(94, 231, 223, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  `;
+  certTitle.textContent = cert.title;
+  
+  // Add link icon if URL exists
+  if (cert.link) {
+    const linkIcon = document.createElement('span');
+    linkIcon.innerHTML = '🔗';
+    linkIcon.style.cssText = `
+      font-size: 16px;
+      opacity: 0.7;
+    `;
+    certTitle.appendChild(linkIcon);
+  }
+  
+  const certIssuer = document.createElement('div');
+  certIssuer.style.cssText = `
+    margin: 0 0 6px 0;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 14px;
+    color: rgba(180, 144, 202, 0.9);
+    font-weight: 600;
+  `;
+  certIssuer.textContent = `${cert.issuer} • ${cert.date}`;
+  
+  const certDesc = document.createElement('p');
+  certDesc.style.cssText = `
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.8);
+  `;
+  certDesc.textContent = cert.description;
+  
+  card.appendChild(certTitle);
+  card.appendChild(certIssuer);
+  card.appendChild(certDesc);
+  scrollContainer.appendChild(card);
+});
   
   const closeBtn = document.createElement('button');
   closeBtn.innerHTML = '×';
@@ -2134,7 +2158,13 @@ function setupChessUI() {
     }, 500);
   });
   
-  document.getElementById('resetBtn').addEventListener('click', resetChessGame);
+  document.getElementById('resetBtn').addEventListener('click', () => {
+  if (isResetting || isAnimating) {
+    console.log('⏸️ Reset blocked - please wait');
+    return;
+  }
+  resetChessGame();
+  });
   
   document.getElementById('playAgainBtn').addEventListener('click', () => {
     document.getElementById('gameOverScreen').classList.remove('show');
@@ -2222,31 +2252,72 @@ function handlePromotionChoice(pieceType) {
   hidePromotionUI();
   
   const { from, to, isAI } = pendingPromotionMove;
-  const piece = chessGame.getPieceAt(to);
   
-  if (piece) {
-    piece.type = pieceType;
-    console.log(`✅ Piece type updated to ${pieceType} at ${to}`);
+  console.log(`✅ Promotion choice: ${pieceType} at ${to}`);
+  
+  // Get the piece at destination (already moved there)
+  const [toFile, toRank] = chessGame.squareToIndices(to);
+  const piece = chessGame.board[toRank][toFile];
+  
+  if (!piece) {
+    console.error(`❌ No piece found at ${to} for promotion!`);
+    isProcessingMove = false;
+    return;
   }
   
+  // Update piece type
+  piece.type = pieceType;
+  piece.moved = true;
+  
+  // Update pieceNameMap
   const pieceName = chessGame.squareToPieceName[to];
+  if (pieceName && chessGame.pieceNameMap[pieceName]) {
+    chessGame.pieceNameMap[pieceName].type = pieceType;
+    console.log(`✅ Updated pieceNameMap: ${pieceName} -> ${pieceType}`);
+  }
+  
+  // Update move history
+  chessGame.moveHistory.push({ 
+    from, 
+    to, 
+    piece, 
+    captured: null, 
+    enPassantCapture: null,
+    promotion: pieceType 
+  });
+  
+  // Switch turn
+  chessGame.currentTurn = chessGame.currentTurn === 'white' ? 'black' : 'white';
+  chessGame.board.turn = chessGame.currentTurn;
+  
+  moveCount++;
+  
+  // Visual update: replace pawn model with promoted piece model
   const color = isAI ? 'black' : 'white';
   const newModelName = getModelNameForPromotion(pieceType, color);
   
   if (pieceName && newModelName && pieceObjects[newModelName]) {
     console.log(`🔄 Replacing ${pieceName} model with ${newModelName}`);
-    replacePromotedPieceModel(pieceName, newModelName, to);
+    replacePromotedPieceModel(pieceName, newModelName, to, pieceType);
   }
   
   pendingPromotionMove = null;
   
-  if (isAI) {
-    chessGame.aiThinking = false;
-    updateChessUI();
-  } else {
-    updateChessUI();
-    setTimeout(() => makeAIMove(), 800);
-  }
+  // Small delay to ensure sync
+  setTimeout(() => {
+    if (isAI) {
+      chessGame.aiThinking = false;
+      updateChessUI();
+      isProcessingMove = false;
+      console.log('✅ AI promotion complete - interactions restored');
+    } else {
+      updateChessUI();
+      chessInteractions.resetSelection();
+      chessInteractions.clearHighlights();
+      // Player promotion done - now AI's turn
+      setTimeout(() => makeAIMove(), 800);
+    }
+  }, 50);
 }
 
 function getModelNameForPromotion(pieceType, color) {
@@ -2268,7 +2339,7 @@ function getModelNameForPromotion(pieceType, color) {
   return mapping[color]?.[pieceType];
 }
 
-function replacePromotedPieceModel(oldPieceName, newModelName, square) {
+function replacePromotedPieceModel(oldPieceName, newModelName, square, pieceType) {
   const oldPiece = pieceObjects[oldPieceName];
   const templatePiece = pieceObjects[newModelName];
   
@@ -2277,6 +2348,8 @@ function replacePromotedPieceModel(oldPieceName, newModelName, square) {
     return;
   }
   
+  console.log(`🔄 Replacing ${oldPieceName} with ${newModelName}`);
+  
   const newPiece = templatePiece.clone(true);
   newPiece.traverse((child) => {
     if (child.isMesh && child.material) {
@@ -2284,75 +2357,372 @@ function replacePromotedPieceModel(oldPieceName, newModelName, square) {
     }
   });
   
+  // Use template piece's original scale
   const originalScale = templatePiece.userData.originalScale
     ? templatePiece.userData.originalScale.clone()
     : new THREE.Vector3(1, 1, 1);
   
   newPiece.scale.copy(originalScale);
   newPiece.userData.originalScale = originalScale.clone();
-  newPiece.position.copy(oldPiece.position);
-  newPiece.rotation.copy(oldPiece.rotation);
-  newPiece.rotation.y += Math.PI;
+  
+  
+  const targetMarker = squareMarkers[square.toUpperCase()];
+let correctY = 0.07; // Default elevated height
+
+if (targetMarker) {
+  const targetWorldPos = new THREE.Vector3();
+  targetMarker.getWorldPosition(targetWorldPos);
+  const targetLocalPos = chessBoard.worldToLocal(targetWorldPos.clone());
+  correctY = targetLocalPos.y + 0.12; 
+} else if (oldPiece.userData.originalPosition) {
+  correctY = oldPiece.userData.originalPosition.y;
+}
+
+  newPiece.position.set(
+    oldPiece.position.x,
+    correctY,  
+    oldPiece.position.z
+  );
+  
+  // Store position - use elevated Y
+  newPiece.userData.originalPosition = {
+    x: oldPiece.position.x,
+    y: correctY,
+    z: oldPiece.position.z
+  };
+
+  // Set correct rotation based on piece type
+  const isKnight = (pieceType === 'N' || newModelName.includes('knight'));
+  if (isKnight) {
+    // White knights always face forward (0°)
+    newPiece.rotation.y = 0;
+  } else {
+    // Other pieces: copy rotation from old piece (pawn)
+    newPiece.rotation.copy(oldPiece.rotation);
+  }
+  
   newPiece.visible = true;
   
-  newPiece.traverse((child) => {
+  // Mark as promoted piece
+  newPiece.userData.isPromotedPiece = true;
+  newPiece.userData.originalPawnName = oldPieceName;
+  newPiece.name = oldPieceName;
+  
+  // Hide old piece
+  oldPiece.visible = false;
+  oldPiece.traverse((child) => {
     if (child.isMesh) {
-      child.visible = true;
+      child.visible = false;
     }
   });
   
-  newPiece.name = oldPieceName;
-  
-  chessBoard.remove(oldPiece);
-  
-  const oldIndex = chessInteractions.whitePieceObjects.indexOf(oldPiece);
-  if (oldIndex !== -1) {
-    chessInteractions.whitePieceObjects.splice(oldIndex, 1);
-  }
-  
+  // Add to scene
   chessBoard.add(newPiece);
-  chessInteractions.whitePieceObjects.push(newPiece);
+  
+  // Update references
   pieceObjects[oldPieceName] = newPiece;
   
-  console.log(`✅ Replaced ${oldPieceName} with ${newModelName} model at scale (${originalScale.x}, ${originalScale.y}, ${originalScale.z})`);
+  // Update interactions array (white pieces only)
+  if (oldPieceName.startsWith('White_') || oldPieceName.startsWith('wp')) {
+    const oldIndex = chessInteractions.whitePieceObjects.indexOf(oldPiece);
+    if (oldIndex !== -1) {
+      chessInteractions.whitePieceObjects[oldIndex] = newPiece;
+    } else {
+      chessInteractions.whitePieceObjects.push(newPiece);
+    }
+  }
+  
+  console.log(`✅ Replaced ${oldPieceName} with ${newModelName} at Y=${correctY.toFixed(4)}, rotation=${newPiece.rotation.y.toFixed(2)}`);
 }
 
 function resetChessGame() {
-  const initialBoardState = {};
-  Object.entries(chessGame.pieceNameMap).forEach(([name, data]) => {
-    initialBoardState[name] = { square: data.square, type: data.type, color: data.color };
+  // Block if already resetting or animating
+  if (isResetting || isAnimating) {
+    console.log('⏸️ Reset blocked - operation in progress');
+    return;
+  }
+  
+  isResetting = true;
+  console.log('🔄 Starting chess reset...');
+  
+  // STEP 1: Clear ALL game state immediately
+  if (chessInteractions) {
+    chessInteractions.deselectPiece();
+    chessInteractions.clearHighlights();
+  }
+
+  Object.values(squareMarkers).forEach(marker => {
+    marker.visible = false;
+  });
+
+  if (chessGame) {
+    chessGame.aiThinking = false;
+    chessGame.gameOver = false;
+  }
+  
+  // STEP 2: Store the ORIGINAL board state from when game loaded
+  const originalBoardState = {
+    // White pieces - EXACT starting positions (LOWERCASE)
+    'White_rook1': { square: 'h1', type: 'R', color: 'white' },
+    'White_knight1': { square: 'g1', type: 'N', color: 'white' },
+    'White_bishop1': { square: 'f1', type: 'B', color: 'white' },
+    'White_queen': { square: 'd1', type: 'Q', color: 'white' },
+    'White_king': { square: 'e1', type: 'K', color: 'white' },
+    'White_bishop2': { square: 'c1', type: 'B', color: 'white' },
+    'White_knight2': { square: 'b1', type: 'N', color: 'white' },
+    'White_rook2': { square: 'a1', type: 'R', color: 'white' },
+    'wp1': { square: 'h2', type: 'P', color: 'white' },
+    'wp2': { square: 'g2', type: 'P', color: 'white' },
+    'wp3': { square: 'f2', type: 'P', color: 'white' },
+    'wp4': { square: 'e2', type: 'P', color: 'white' },
+    'wp5': { square: 'd2', type: 'P', color: 'white' },
+    'wp6': { square: 'c2', type: 'P', color: 'white' },
+    'wp7': { square: 'b2', type: 'P', color: 'white' },
+    'wp8': { square: 'a2', type: 'P', color: 'white' },
+    
+    // Black pieces - EXACT starting positions (LOWERCASE)
+    'Black_rook_1': { square: 'h8', type: 'r', color: 'black' },
+    'Black_knight_1': { square: 'g8', type: 'n', color: 'black' },
+    'Black_bishop_1': { square: 'f8', type: 'b', color: 'black' },
+    'Black_queen': { square: 'd8', type: 'q', color: 'black' },
+    'Black_king': { square: 'e8', type: 'k', color: 'black' },
+    'Black_elephant2': { square: 'c8', type: 'b', color: 'black' },
+    'Black_knight_2': { square: 'b8', type: 'n', color: 'black' },
+    'Black_rook_2': { square: 'a8', type: 'r', color: 'black' },
+    'bp1': { square: 'h7', type: 'p', color: 'black' },
+    'bp2': { square: 'g7', type: 'p', color: 'black' },
+    'bp3': { square: 'f7', type: 'p', color: 'black' },
+    'bp4': { square: 'e7', type: 'p', color: 'black' },
+    'bp5': { square: 'd7', type: 'p', color: 'black' },
+    'bp6': { square: 'c7', type: 'p', color: 'black' },
+    'bp7': { square: 'b7', type: 'p', color: 'black' },
+    'bp8': { square: 'a7', type: 'p', color: 'black' }
+  };
+  
+  // STEP 3: Find and clean up ALL promoted pieces
+  const promotedPieces = [];
+  Object.entries(pieceObjects).forEach(([name, piece]) => {
+    if (piece && piece.userData.isPromotedPiece) {
+      promotedPieces.push({ name, piece });
+    }
   });
   
-  chessGame = new ChessGame();
-  window.chessGame = chessGame;
-  moveCount = 0;
-  pendingPromotionMove = null;
+  console.log(`🧹 Found ${promotedPieces.length} promoted pieces to remove`);
   
-  Object.entries(initialBoardState).forEach(([name, data]) => {
-    const pieceObj = pieceObjects[name];
-    if (pieceObj && squareMarkers[data.square.toUpperCase()]) {
+  // Remove promoted pieces completely
+  promotedPieces.forEach(({ name, piece }) => {
+    console.log(`🗑️ Removing promoted piece: ${name}`);
+    
+    // Dispose geometry and material
+    if (piece.geometry) piece.geometry.dispose();
+    if (piece.material) {
+      if (Array.isArray(piece.material)) {
+        piece.material.forEach(mat => mat.dispose());
+      } else {
+        piece.material.dispose();
+      }
+    }
+    
+    // Remove from scene
+    if (piece.parent) piece.parent.remove(piece);
+    
+    // Remove from interactions array
+    const index = chessInteractions.whitePieceObjects.indexOf(piece);
+    if (index !== -1) {
+      chessInteractions.whitePieceObjects.splice(index, 1);
+    }
+    
+    // Clear reference
+    pieceObjects[name] = null;
+  });
+  
+  // STEP 4: Find ALL original piece models and restore them
+  Object.entries(originalBoardState).forEach(([name, data]) => {
+    let originalPiece = null;
+    
+    // Search for original model in chessBoard first
+    chessBoard.traverse((child) => {
+      if (child.name === name && 
+          child.userData.isOriginalModel && 
+          !child.userData.isPromotedPiece) {
+        originalPiece = child;
+      }
+    });
+    
+    // Fallback: search entire scene
+    if (!originalPiece) {
+      scene.traverse((child) => {
+        if (child.name === name && 
+            child.userData.isOriginalModel && 
+            !child.userData.isPromotedPiece) {
+          originalPiece = child;
+        }
+      });
+    }
+    
+    if (originalPiece) {
+      // Update pieceObjects reference
+      pieceObjects[name] = originalPiece;
+      
+      // Clear any promoted flags
+      delete originalPiece.userData.isPromotedPiece;
+      delete originalPiece.userData.originalPawnName;
+      
+      // Ensure it's parented to chessBoard
+      if (originalPiece.parent !== chessBoard) {
+        const worldPos = new THREE.Vector3();
+        originalPiece.getWorldPosition(worldPos);
+        
+        if (originalPiece.parent) {
+          originalPiece.parent.remove(originalPiece);
+        }
+        chessBoard.add(originalPiece);
+        
+        const localPos = chessBoard.worldToLocal(worldPos);
+        originalPiece.position.copy(localPos);
+      }
+      
+      // Reset scale
+      if (originalPiece.userData.originalScale) {
+        originalPiece.scale.copy(originalPiece.userData.originalScale);
+      }
+      
+      // Make visible
+      originalPiece.visible = true;
+      originalPiece.traverse((child) => {
+        if (child.isMesh) {
+          child.visible = true;
+          if (child.material) {
+            child.material.opacity = 1.0;
+            child.material.transparent = false;
+            child.material.needsUpdate = true;
+          }
+        }
+      });
+      
+      // Add to interactions (white pieces only)
+      if (data.color === 'white') {
+        const existingIndex = chessInteractions.whitePieceObjects.indexOf(originalPiece);
+        if (existingIndex === -1) {
+          chessInteractions.whitePieceObjects.push(originalPiece);
+        }
+      }
+      
+      console.log(`✅ Restored original piece: ${name}`);
+    } else {
+      console.warn(`⚠️ Could not find original model for: ${name}`);
+    }
+  });
+  
+  // STEP 5: Position ALL pieces to starting squares
+  Object.entries(originalBoardState).forEach(([name, data]) => {
+    const piece = pieceObjects[name];
+    
+    if (piece && squareMarkers[data.square.toUpperCase()]) {
       const targetMarker = squareMarkers[data.square.toUpperCase()];
       const targetWorldPos = new THREE.Vector3();
       targetMarker.getWorldPosition(targetWorldPos);
       const targetLocalPos = chessBoard.worldToLocal(targetWorldPos.clone());
       
-      const originalY = pieceObj.userData.originalPosition 
-        ? pieceObj.userData.originalPosition.y 
-        : targetLocalPos.y;
+      // Use stored original Y position
+      const correctY = piece.userData.originalPosition 
+        ? piece.userData.originalPosition.y 
+        : targetLocalPos.y + 0.07;
       
-      pieceObj.position.set(targetLocalPos.x, originalY, targetLocalPos.z);
-      pieceObj.visible = true;
-      pieceObj.scale.copy(pieceObj.userData.originalScale || new THREE.Vector3(1, 1, 1));
-      pieceObj.rotation.y = data.color === 'black' ? Math.PI : 0;
+      // Set position
+      piece.position.set(
+        targetLocalPos.x,
+        correctY,
+        targetLocalPos.z
+      );
+      
+      // Reset rotation (preserve BLACK knight rotations)
+      const isBlackKnight = (name.includes('knight') || name.includes('Knight')) && data.color === 'black';
+      if (!isBlackKnight) {
+        piece.rotation.y = data.color === 'black' ? Math.PI : 0;
+      }
+      
+      // Force visibility
+      piece.visible = true;
+      piece.traverse((child) => {
+        if (child.isMesh) {
+          child.visible = true;
+          if (child.material) {
+            child.material.opacity = 1.0;
+            child.material.transparent = false;
+          }
+        }
+      });
+      
+      console.log(`📍 Reset ${name} to ${data.square} at Y=${correctY.toFixed(4)}`);
     }
   });
   
+  // STEP 6: Create fresh game state
+  chessGame = new ChessGame();
+  window.chessGame = chessGame;
+  moveCount = 0;
+  pendingPromotionMove = null;
+  
+  // STEP 7: Sync game state with visual state
+  chessGame.pieceNameMap = {};
+  chessGame.squareToPieceName = {};
+  
+  chessGame.board = Array(8).fill(null).map(() => Array(8).fill(null));
+  
+  Object.entries(originalBoardState).forEach(([name, data]) => {
+    const piece = pieceObjects[name];
+    if (piece && piece.visible) {
+      chessGame.pieceNameMap[name] = {
+        square: data.square, 
+        type: data.type,
+        color: data.color
+      };
+      
+      // Add to square-to-piece map (ALSO LOWERCASE - this was the bug!)
+      chessGame.squareToPieceName[data.square] = name;
+      
+      // Add to board array
+      const [file, rank] = chessGame.squareToIndices(data.square);
+      chessGame.board[rank][file] = {
+        type: data.type,
+        color: data.color,
+        name: name,
+        moved: false
+      };
+    }
+  });
+  
+  chessGame.currentTurn = 'white';
+  chessGame.board.turn = 'white';
+  chessGame.enPassantTarget = null;
+  chessGame.moveHistory = [];
+  
+  console.log('✅ Game state rebuilt:');
+  console.log('  - pieceNameMap entries:', Object.keys(chessGame.pieceNameMap).length);
+  console.log('  - squareToPieceName entries:', Object.keys(chessGame.squareToPieceName).length);
+  console.log('  - Sample square check (e2):', chessGame.squareToPieceName['e2']);
+  
+  // STEP 8: Final cleanup
   if (chessInteractions) {
     chessInteractions.deselectPiece();
+    chessInteractions.clearHighlights();
+    chessInteractions.resetSelection();
   }
+
+  Object.values(squareMarkers).forEach(marker => {
+    marker.visible = false;
+  });
   
   updateChessUI();
   showMoveIndicator('♟️ Board Reset!');
+  
+  // Re-enable interactions after short delay
+  setTimeout(() => {
+    isResetting = false;
+    isProcessingMove = false;
+    console.log('✅ Reset complete - interactions restored');
+  }, 500);
 }
 
 function showGameOver(winner) {
@@ -2721,6 +3091,7 @@ if (child.name === "radio") {
 if (chessPieceNames.includes(child.name)) {
   chessPiecesToParent.push(child);
   pieceObjects[child.name] = child;
+  child.userData.isOriginalModel = true;
 }
 
 if (child.name && /^[A-H][1-8]$/.test(child.name)) {
@@ -3253,7 +3624,7 @@ else if (currentMode === 'desk') {
 }
 
 function onPointerClick(event) {
-  if (isCameraAnimating || normalModeInteractionBlocked) return;
+  if (isCameraAnimating || normalModeInteractionBlocked || isResetting || isAnimating) return;
   
   updateCameraDebug();
   console.log('Camera Position:', camera.position);
@@ -3270,11 +3641,14 @@ function onPointerClick(event) {
   }
   
   // Chess mode - handle chess interactions
-  if (currentMode === 'chess' && gameStarted && chessInteractions) {
-    chessInteractions.handleClick(chessGame, makePlayerMove);
+if (currentMode === 'chess' && gameStarted && chessInteractions) {
+  if (isProcessingMove || isAnimating || isResetting || chessGame.aiThinking) {
+    console.log('⏸️ Click blocked - move in progress');
     return;
   }
-  
+  chessInteractions.handleClick(chessGame, makePlayerMove);
+  return;
+}
   const hits = raycaster.intersectObjects(selectable, true);
   
   if (hits.length > 0) {
@@ -3584,11 +3958,95 @@ function enterTVMode() {
 }
 
 function makePlayerMove(from, to) {
-  const moveData = chessGame.makeMove(from, to);
-  moveCount++;
+  // CRITICAL: Block if ANY operation is in progress
+  if (isResetting || isAnimating || isProcessingMove) {
+    console.log('⏸️ Move blocked - operation in progress');
+    return;
+  }
   
+  isProcessingMove = true; // Lock ALL interactions
+  isAnimating = true;
+  
+  // CRITICAL FIX: Check if this is a promotion move WITHOUT calling makeMove yet
+  const piece = chessGame.getPieceAt(from);
+  if (!piece) {
+    console.error(`❌ No piece at ${from} to move!`);
+    isProcessingMove = false;
+    isAnimating = false;
+    return;
+  }
+  
+  const [fromFile, fromRank] = chessGame.squareToIndices(from);
+  const [toFile, toRank] = chessGame.squareToIndices(to);
+  const isPawn = piece.type.toLowerCase() === 'p';
+  const promotionRank = piece.color === 'white' ? 7 : 0;
+  const needsPromotion = isPawn && toRank === promotionRank;
+  
+  // Get selected piece object BEFORE moving
   const selected = chessInteractions.getSelectedPiece();
   const pieceObj = selected.obj;
+  
+  // If promotion needed, handle capture FIRST, then animate, then show UI
+  if (needsPromotion) {
+    console.log(`🎯 Promotion detected! Animating to ${to} first...`);
+    
+    // Check for capture
+    const capturedPieceName = chessGame.squareToPieceName[to];
+    if (capturedPieceName) {
+      console.log(`🎯 Capturing ${capturedPieceName} during promotion`);
+      chessAnimations.fadeOutPiece(capturedPieceName);
+    }
+    
+    // Store the move details for later
+    pendingPromotionMove = { from, to, isAI: false };
+    
+    // CRITICAL: Update board position IMMEDIATELY (without promotion type yet)
+    // This makes the piece disappear from the old square
+    chessGame.board[toRank][toFile] = piece;
+    chessGame.board[fromRank][fromFile] = null;
+    
+    // Update piece name mappings
+    const pieceName = chessGame.squareToPieceName[from];
+    if (pieceName) {
+      delete chessGame.squareToPieceName[from];
+      chessGame.squareToPieceName[to] = pieceName;
+      
+      if (chessGame.pieceNameMap[pieceName]) {
+        chessGame.pieceNameMap[pieceName].square = to;
+      }
+    }
+    
+    // Handle captured piece removal from maps
+    if (capturedPieceName) {
+      if (chessGame.pieceNameMap[capturedPieceName]) {
+        delete chessGame.pieceNameMap[capturedPieceName];
+      }
+    }
+    
+    // NOW animate piece to destination
+    chessAnimations.animatePieceMove(from, to, () => {
+      chessAnimations.lowerPiece(pieceObj, 0.07, () => {
+        // Piece is now visually at destination - show promotion UI
+        showPromotionUI('white');
+        isAnimating = false;
+        // Keep isProcessingMove locked until promotion choice made
+      });
+    });
+    
+    return; // EXIT - wait for promotion choice
+  }
+  
+  // NORMAL (non-promotion) move - proceed as usual
+  const moveData = chessGame.makeMove(from, to);
+  if (!moveData) {
+    console.error('❌ makeMove returned null');
+    isProcessingMove = false;
+    isAnimating = false;
+    return;
+  }
+  
+  moveCount++;
+  
   const capturedPieceName = moveData.capturedPieceName;
   const enPassantCaptureSquare = moveData.enPassantCaptureSquare;
   const captureDelay = (capturedPieceName || enPassantCaptureSquare) ? 500 : 0;
@@ -3617,15 +4075,13 @@ function makePlayerMove(from, to) {
     if (pieceObj) {
       chessAnimations.animatePieceMove(from, to, () => {
         chessAnimations.lowerPiece(pieceObj, 0.07, () => {
-          if (moveData.needsPromotion) {
-            pendingPromotionMove = { from, to, isAI: false };
-            showPromotionUI('white');
-          } else {
-            updateChessUI();
-            chessInteractions.resetSelection();
-            chessInteractions.clearHighlights();
-            setTimeout(() => makeAIMove(), 800);
-          }
+          // Normal move complete
+          updateChessUI();
+          chessInteractions.resetSelection();
+          chessInteractions.clearHighlights();
+          isAnimating = false;
+          // Keep isProcessingMove locked until AI finishes
+          setTimeout(() => makeAIMove(), 800);
         });
       });
     }
@@ -3633,8 +4089,12 @@ function makePlayerMove(from, to) {
 }
 
 async function makeAIMove() {
-  if (!chessGame || !chessAI || chessGame.gameOver) return;
+  if (!chessGame || !chessAI || chessGame.gameOver) {
+    isProcessingMove = false; // Unlock on exit
+    return;
+  }
   
+  isAnimating = true;
   chessGame.aiThinking = true;
   updateChessUI();
   
@@ -3673,17 +4133,30 @@ async function makeAIMove() {
             if (moveData.needsPromotion) {
               pendingPromotionMove = { from: move.from, to: move.to, isAI: true };
               showPromotionUI('black');
+              isAnimating = false;
+              // Keep isProcessingMove locked until promotion completes
             } else {
               chessGame.aiThinking = false;
               updateChessUI();
+              isAnimating = false;
+              isProcessingMove = false; // UNLOCK - AI move complete
+              console.log('✅ AI move complete - interactions restored');
             }
           });
         }
       }, captureDelay);
+    } else {
+      // No valid move
+      chessGame.aiThinking = false;
+      isAnimating = false;
+      isProcessingMove = false; // UNLOCK
+      updateChessUI();
     }
   } catch (error) {
     console.error('AI move error:', error);
     chessGame.aiThinking = false;
+    isAnimating = false;
+    isProcessingMove = false; // UNLOCK on error
     updateChessUI();
   }
 }

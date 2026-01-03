@@ -25,6 +25,9 @@ class ChessAnimations {
   }
   
   animatePieceMove(from, to, onComplete = null) {
+    from = from.toLowerCase();
+    to = to.toLowerCase();
+    
     const pieceName = window.chessGame.squareToPieceName[to];
     const pieceObj = this.pieceObjects[pieceName];
     
@@ -94,6 +97,81 @@ class ChessAnimations {
     
     animate();
   }
+  
+  animatePieceMoveWithName(pieceName, from, to, onComplete = null) {
+  // CRITICAL: Use the provided piece name instead of looking it up
+  const pieceObj = this.pieceObjects[pieceName];
+  
+  if (!pieceObj) {
+    console.warn(`⚠️ Piece not found for: ${pieceName}`);
+    if (onComplete) onComplete();
+    return;
+  }
+  
+  // Normalize to lowercase for consistency
+  from = from.toLowerCase();
+  to = to.toLowerCase();
+  
+  const targetMarker = this.squareMarkers[to.toUpperCase()];
+  if (!targetMarker) {
+    console.warn(`⚠️ Target marker not found for: ${to}`);
+    if (onComplete) onComplete();
+    return;
+  }
+  
+  const targetWorldPos = new this.THREE.Vector3();
+  targetMarker.getWorldPosition(targetWorldPos);
+  
+  const targetLocalPos = this.chessBoard.worldToLocal(targetWorldPos.clone());
+  
+  const startPos = {
+    x: pieceObj.position.x,
+    y: pieceObj.position.y,
+    z: pieceObj.position.z
+  };
+  
+  const finalPos = {
+    x: targetLocalPos.x,
+    y: startPos.y,
+    z: targetLocalPos.z
+  };
+  
+  console.log(`🎬 Animating ${pieceName} from (${startPos.x.toFixed(3)}, ${startPos.y.toFixed(3)}, ${startPos.z.toFixed(3)}) to (${finalPos.x.toFixed(3)}, ${finalPos.y.toFixed(3)}, ${finalPos.z.toFixed(3)})`);
+  
+  const duration = 600;
+  const startTime = performance.now();
+  let soundPlayed = false;
+  
+  const animate = () => {
+    if (!pieceObj || !pieceObj.position) {
+      if (onComplete) onComplete();
+      return;
+    }
+    
+    const elapsed = performance.now() - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - t, 3);
+    
+    pieceObj.position.x = startPos.x + (finalPos.x - startPos.x) * eased;
+    pieceObj.position.y = startPos.y + (finalPos.y - startPos.y) * eased;
+    pieceObj.position.z = startPos.z + (finalPos.z - startPos.z) * eased;
+    
+    // Play sound when piece is 90% to destination
+    if (!soundPlayed && t >= 0.9) {
+      this.playMoveSound();
+      soundPlayed = true;
+    }
+    
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      console.log(`✅ Animation complete for ${pieceName}`);
+      if (onComplete) onComplete();
+    }
+  };
+  
+  animate();
+}
   
   fadeOutPiece(pieceName, onComplete = null) {
     const pieceObj = this.pieceObjects[pieceName];
