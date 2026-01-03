@@ -1,4 +1,5 @@
-/* chess-style.css */
+/* chess-style.css - COMPLETE REPLACEMENT */
+/* Matches the anime glassmorphism theme used throughout the website */
 
 :root {
   --anime-teal: #5ee7df;
@@ -12,10 +13,9 @@
   --glow-purple: rgba(180, 144, 202, 0.6);
   --glow-pink: rgba(251, 194, 235, 0.6);
   
-  --wood-dark: #3e2723;
-  --wood-medium: #5d4037;
-  --wood-light: #8d6e63;
-  --wood-accent: #a1887f;
+  /* Consistent glass background used throughout site */
+  --glass-bg: linear-gradient(145deg, rgba(20, 20, 35, 0.98) 0%, rgba(25, 25, 45, 0.95) 100%);
+  --glass-border: linear-gradient(135deg, rgba(94, 231, 223, 0.8), rgba(180, 144, 202, 0.6)) 1;
 }
 
 * {
@@ -39,11 +39,71 @@ canvas {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: white;
-  font-size: 24px;
   z-index: 1000;
   text-align: center;
-  text-shadow: 0 0 20px var(--glow-teal);
+  font-family: 'Courier New', monospace;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+#loading .loading-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, var(--anime-teal), var(--anime-lavender), var(--anime-gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 3px;
+  animation: anime-glow 3s ease-in-out infinite;
+}
+
+#loading .loading-bar {
+  width: 300px;
+  height: 6px;
+  background: rgba(94, 231, 223, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(94, 231, 223, 0.3);
+  position: relative;
+}
+
+#loading .loading-progress {
+  height: 100%;
+  background: linear-gradient(90deg, var(--anime-teal), var(--anime-lavender), var(--anime-pink));
+  border-radius: 10px;
+  width: 0%;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 20px var(--glow-teal);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.5); }
+  100% { filter: brightness(1); }
+}
+
+#loading .loading-percent {
+  font-size: 1.2rem;
+  color: white;
+  text-shadow: 0 0 15px var(--glow-teal);
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+#loading .loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(94, 231, 223, 0.2);
+  border-top-color: var(--anime-teal);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* Anime Glow Animation */
@@ -58,25 +118,23 @@ canvas {
   }
 }
 
-/* Welcome Screen */
+/* Welcome Screen - UPDATED TO MATCH SITE THEME */
 #chessWelcome {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.9);
   text-align: center;
-  background: linear-gradient(135deg, 
-    rgba(62, 39, 35, 0.95) 0%, 
-    rgba(93, 64, 55, 0.95) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: var(--glass-bg);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
   padding: 3rem 4rem;
-  border-radius: 24px;
-  border: 3px solid var(--wood-accent);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 
-              0 0 60px rgba(251, 194, 235, 0.3),
-              inset 0 0 40px rgba(255, 255, 255, 0.05),
-              inset 0 2px 1px rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  border: 2px solid;
+  border-image: var(--glass-border);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8), 
+              0 0 60px rgba(94, 231, 223, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
   z-index: 1000;
   opacity: 0;
   pointer-events: none;
@@ -92,12 +150,14 @@ canvas {
 #chessWelcome h1 {
   font-size: 3rem;
   margin-bottom: 1rem;
+  font-family: 'Courier New', monospace;
   background: linear-gradient(135deg, var(--anime-teal), var(--anime-lavender), var(--anime-gold));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.3));
   animation: anime-glow 3s ease-in-out infinite;
+  letter-spacing: 2px;
 }
 
 #chessWelcome p {
@@ -105,9 +165,11 @@ canvas {
   margin-bottom: 2rem;
   color: rgba(255, 255, 255, 0.9);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-family: 'Segoe UI', sans-serif;
+  line-height: 1.6;
 }
 
-/* Buttons */
+/* Buttons - UPDATED */
 .chess-buttons {
   display: flex;
   gap: 1rem;
@@ -119,13 +181,15 @@ canvas {
   padding: 1rem 2.5rem;
   font-size: 1.1rem;
   font-weight: 600;
-  border: none;
-  border-radius: 16px;
+  border: 2px solid rgba(94, 231, 223, 0.6);
+  border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   position: relative;
   overflow: hidden;
+  font-family: 'Segoe UI', sans-serif;
+  letter-spacing: 1px;
 }
 
 .chess-btn::before {
@@ -151,37 +215,46 @@ canvas {
 }
 
 .chess-btn.primary {
-  background: linear-gradient(135deg, var(--anime-teal), var(--anime-lavender));
-  color: white;
-  box-shadow: 0 4px 16px rgba(94, 231, 223, 0.4), 0 0 30px rgba(180, 144, 202, 0.3);
+  background: linear-gradient(135deg, rgba(94, 231, 223, 0.25) 0%, rgba(94, 200, 223, 0.2) 100%);
+  color: #5ee7df;
+  box-shadow: 0 4px 16px rgba(94, 231, 223, 0.3), 0 0 30px rgba(94, 231, 223, 0.15);
 }
 
 .chess-btn.primary:hover {
-  box-shadow: 0 6px 24px rgba(94, 231, 223, 0.6), 0 0 40px rgba(180, 144, 202, 0.5);
+  background: linear-gradient(135deg, rgba(94, 231, 223, 0.4) 0%, rgba(94, 200, 223, 0.35) 100%);
+  box-shadow: 0 6px 24px rgba(94, 231, 223, 0.5), 0 0 40px rgba(94, 231, 223, 0.25);
   transform: translateY(-2px);
+  border-color: rgba(94, 231, 223, 0.9);
 }
 
 .chess-btn.secondary {
-  background: linear-gradient(135deg, var(--wood-medium), var(--wood-light));
-  color: white;
-  box-shadow: 0 4px 16px rgba(93, 64, 55, 0.4);
-  border: 2px solid var(--wood-accent);
+  background: rgba(180, 144, 202, 0.15);
+  color: #b490ca;
+  border-color: rgba(180, 144, 202, 0.6);
+  box-shadow: 0 4px 16px rgba(180, 144, 202, 0.2);
 }
 
 .chess-btn.secondary:hover {
-  box-shadow: 0 6px 24px rgba(93, 64, 55, 0.6);
+  background: rgba(180, 144, 202, 0.3);
+  box-shadow: 0 6px 24px rgba(180, 144, 202, 0.4);
   transform: translateY(-2px);
+  border-color: rgba(180, 144, 202, 0.9);
 }
 
 .chess-btn.danger {
-  background: linear-gradient(135deg, #f093fb, #f5576c);
+  background: linear-gradient(135deg, rgba(245, 87, 108, 0.85) 0%, rgba(220, 70, 90, 0.9) 100%);
   color: white;
-  box-shadow: 0 4px 16px rgba(245, 87, 108, 0.4);
+  border-color: rgba(245, 87, 108, 0.9);
+  box-shadow: 0 4px 16px rgba(245, 87, 108, 0.5), 0 0 20px rgba(245, 87, 108, 0.2);
+  backdrop-filter: blur(10px);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .chess-btn.danger:hover {
-  box-shadow: 0 6px 24px rgba(245, 87, 108, 0.6);
+  background: linear-gradient(135deg, rgba(245, 87, 108, 1) 0%, rgba(220, 70, 90, 1) 100%);
+  box-shadow: 0 6px 24px rgba(245, 87, 108, 0.7), 0 0 30px rgba(245, 87, 108, 0.4);
   transform: translateY(-2px);
+  border-color: rgba(255, 100, 120, 1);
 }
 
 .chess-btn:disabled {
@@ -189,40 +262,183 @@ canvas {
   cursor: not-allowed;
 }
 
-.loading-text {
-  margin-top: 1.5rem;
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.8);
-  animation: pulse 1.5s ease-in-out infinite;
+/* Chess AI Loading Animation - Brand New Design */
+.ai-loading-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  margin: 0 auto;
+  margin-top: 2.5rem;
+  padding: 1.5rem 2rem;
+  width: fit-content;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+.ai-loading-spinner {
+  position: relative;
+  width: 140px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  margin: 0 auto;
 }
 
-/* Status Display - Compact and Cute */
+/* Chess pieces bouncing animation */
+.ai-loading-spinner::before {
+  content: '♟';
+  font-size: 2rem;
+  animation: bounce-1 1.4s ease-in-out infinite;
+  filter: drop-shadow(0 0 15px var(--glow-teal));
+  color: var(--anime-teal);
+}
+
+.ai-loading-spinner::after {
+  content: '♞';
+  font-size: 2rem;
+  animation: bounce-2 1.4s ease-in-out infinite 0.2s;
+  filter: drop-shadow(0 0 15px var(--glow-lavender));
+  color: var(--anime-lavender);
+}
+
+.ai-loading-spinner-inner {
+  font-size: 2rem;
+  animation: bounce-3 1.4s ease-in-out infinite 0.4s;
+  filter: drop-shadow(0 0 15px var(--glow-pink));
+  color: var(--anime-pink);
+}
+
+.ai-loading-spinner-inner::before {
+  content: '♚';
+}
+
+/* Bouncing animations */
+@keyframes bounce-1 {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-25px) scale(1.1);
+  }
+}
+
+@keyframes bounce-2 {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-25px) scale(1.1);
+  }
+}
+
+@keyframes bounce-3 {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-25px) scale(1.1);
+  }
+}
+
+/* Enhanced loading text with wave effect */
+.ai-loading-text {
+  font-size: 1.15rem;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 3px;
+  margin: 0;
+  background: linear-gradient(90deg, 
+    var(--anime-teal) 0%, 
+    var(--anime-lavender) 33%,
+    var(--anime-pink) 66%, 
+    var(--anime-gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 300% 100%;
+  animation: gradient-wave 3s ease-in-out infinite;
+  text-align: center;
+  font-weight: 600;
+  filter: drop-shadow(0 2px 8px rgba(94, 231, 223, 0.3));
+}
+
+@keyframes gradient-wave {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Animated dots */
+.ai-loading-text::after {
+  content: '';
+  animation: loading-dots 1.5s steps(4, end) infinite;
+  background: linear-gradient(90deg, var(--anime-teal), var(--anime-lavender));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@keyframes loading-dots {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+}
+
+/* Glowing underline effect */
+.ai-loading-container::after {
+  content: '';
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--anime-teal) 50%, 
+    transparent 100%);
+  animation: line-glow 2s ease-in-out infinite;
+  border-radius: 2px;
+}
+
+@keyframes line-glow {
+  0%, 100% {
+    opacity: 0.3;
+    box-shadow: 0 0 5px var(--glow-teal);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 20px var(--glow-teal), 0 0 40px var(--glow-purple);
+  }
+}
+
+
+/* Status Display - UPDATED TO MATCH THEME */
 #chessStatus {
   position: fixed;
   top: 20px;
   left: 20px;
-  background: linear-gradient(135deg, 
-    rgba(62, 39, 35, 0.95) 0%, 
-    rgba(93, 64, 55, 0.95) 100%);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  padding: 1rem 1.25rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  padding: 1.25rem 1.5rem;
   border-radius: 16px;
-  border: 2px solid var(--wood-accent);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 
-              inset 0 0 20px rgba(255, 255, 255, 0.05),
-              0 0 30px rgba(251, 194, 235, 0.2);
+  border: 2px solid;
+  border-image: var(--glass-border);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5), 
+              inset 0 1px 0 rgba(255, 255, 255, 0.05),
+              0 0 30px rgba(94, 231, 223, 0.15);
   opacity: 0;
   pointer-events: none;
   transform: translateX(-20px);
   transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  min-width: 160px;
-  max-width: 200px;
+  min-width: 180px;
+  max-width: 220px;
 }
 
 #chessStatus.active {
@@ -232,38 +448,45 @@ canvas {
 }
 
 #chessStatus h3 {
-  margin: 0 0 0.75rem 0;
-  font-size: 1.1rem;
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+  font-family: 'Courier New', monospace;
   background: linear-gradient(135deg, var(--anime-teal), var(--anime-gold));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-align: center;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(94, 231, 223, 0.3);
 }
 
 .status-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-  padding: 0.25rem 0;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(94, 231, 223, 0.1);
 }
 
 .status-item:last-child {
   margin-bottom: 0;
+  border-bottom: none;
 }
 
 .status-label {
   color: rgba(255, 255, 255, 0.7);
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  font-family: 'Segoe UI', sans-serif;
 }
 
 .status-value {
   font-weight: 600;
   color: white;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  font-family: 'Courier New', monospace;
 }
 
 .status-value.turn-white {
@@ -276,7 +499,7 @@ canvas {
   text-shadow: 0 0 10px var(--glow-purple);
 }
 
-/* Control Panel */
+/* Control Panel - UPDATED */
 #chessControls {
   position: fixed;
   bottom: 20px;
@@ -295,23 +518,22 @@ canvas {
   transform: translateX(-50%) translateY(0);
 }
 
-/* Promotion UI */
+/* Promotion UI - UPDATED */
 #promotionUI {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.8);
-  background: linear-gradient(135deg, 
-    rgba(62, 39, 35, 0.98) 0%, 
-    rgba(93, 64, 55, 0.98) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: var(--glass-bg);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
   padding: 2.5rem 3rem;
-  border-radius: 24px;
-  border: 3px solid var(--wood-accent);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 
-              0 0 60px rgba(251, 194, 235, 0.3),
-              inset 0 0 40px rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  border: 2px solid;
+  border-image: var(--glass-border);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8), 
+              0 0 60px rgba(94, 231, 223, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
   text-align: center;
   z-index: 2000;
   opacity: 0;
@@ -328,10 +550,12 @@ canvas {
 #promotionTitle {
   font-size: 1.8rem;
   margin-bottom: 1.5rem;
+  font-family: 'Courier New', monospace;
   background: linear-gradient(135deg, var(--anime-teal), var(--anime-lavender));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  letter-spacing: 2px;
 }
 
 .promotion-pieces {
@@ -344,47 +568,50 @@ canvas {
   width: 80px;
   height: 80px;
   font-size: 3rem;
-  background: rgba(141, 110, 99, 0.3);
-  border: 2px solid var(--wood-accent);
+  background: rgba(94, 231, 223, 0.1);
+  border: 2px solid rgba(94, 231, 223, 0.4);
   border-radius: 16px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   display: flex;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(10px);
 }
 
 .promo-piece:hover {
-  background: linear-gradient(135deg, var(--anime-teal), var(--anime-lavender));
+  background: linear-gradient(135deg, rgba(94, 231, 223, 0.3) 0%, rgba(180, 144, 202, 0.25) 100%);
   transform: translateY(-5px) scale(1.1);
-  box-shadow: 0 8px 24px rgba(94, 231, 223, 0.6), 0 0 40px rgba(180, 144, 202, 0.5);
+  box-shadow: 0 8px 24px rgba(94, 231, 223, 0.6), 0 0 40px rgba(94, 231, 223, 0.3);
+  border-color: rgba(94, 231, 223, 0.9);
 }
 
-/* Move Indicator */
+/* Move Indicator - UPDATED */
 .move-indicator {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.8);
-  background: linear-gradient(135deg, 
-    rgba(62, 39, 35, 0.98) 0%, 
-    rgba(93, 64, 55, 0.98) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: var(--glass-bg);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
   padding: 1.5rem 3rem;
   border-radius: 16px;
-  border: 2px solid var(--wood-accent);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 
-              inset 0 0 30px rgba(255, 255, 255, 0.05),
-              0 0 40px rgba(251, 194, 235, 0.3);
+  border: 2px solid;
+  border-image: var(--glass-border);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8), 
+              inset 0 1px 0 rgba(255, 255, 255, 0.05),
+              0 0 40px rgba(94, 231, 223, 0.2);
   font-size: 1.5rem;
   font-weight: 600;
+  font-family: 'Courier New', monospace;
   color: white;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   z-index: 3000;
   opacity: 0;
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  letter-spacing: 2px;
 }
 
 .move-indicator.show {
@@ -392,23 +619,22 @@ canvas {
   transform: translate(-50%, -50%) scale(1);
 }
 
-/* Game Over Screen */
+/* Game Over Screen - UPDATED */
 #gameOverScreen {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.8);
-  background: linear-gradient(135deg, 
-    rgba(62, 39, 35, 0.98) 0%, 
-    rgba(93, 64, 55, 0.98) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: var(--glass-bg);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
   padding: 3rem 4rem;
-  border-radius: 24px;
-  border: 3px solid var(--wood-accent);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 
-              0 0 60px rgba(251, 194, 235, 0.3),
-              inset 0 0 40px rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  border: 2px solid;
+  border-image: var(--glass-border);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8), 
+              0 0 60px rgba(94, 231, 223, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
   text-align: center;
   z-index: 3000;
   opacity: 0;
@@ -425,6 +651,8 @@ canvas {
 #gameOverTitle {
   font-size: 2.5rem;
   margin-bottom: 1rem;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
 }
 
 #gameOverTitle .winner {
@@ -446,6 +674,8 @@ canvas {
   font-size: 1.3rem;
   margin-bottom: 2rem;
   color: rgba(255, 255, 255, 0.9);
+  font-family: 'Segoe UI', sans-serif;
+  line-height: 1.6;
 }
 
 /* Responsive */
@@ -460,7 +690,7 @@ canvas {
   
   #chessStatus {
     min-width: 140px;
-    padding: 0.8rem 1rem;
+    padding: 1rem 1.25rem;
   }
   
   #chessControls {
@@ -479,7 +709,7 @@ canvas {
   }
 }
 
-/* Camera Debug Display */
+/* Camera Debug Display - Keep same */
 #cameraDebug {
   position: fixed;
   top: 20px;
