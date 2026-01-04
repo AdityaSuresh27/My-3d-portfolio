@@ -3,7 +3,6 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-console.log("MAIN.JS LOADED ✅");
 
 let scene, camera, renderer, controls;
 let raycaster = new THREE.Raycaster();
@@ -155,34 +154,34 @@ const introDialogues = [
 
 const certificates = [
   {
-    title: "Full Stack Web Development",
-    issuer: "Udemy",
-    date: "2023",
-    description: "Comprehensive course covering HTML, CSS, JavaScript, Node.js, Express, MongoDB, and React"
+    title: "Foundations of AI",
+    issuer: "Microsoft & Edunet Foundation",
+    description: "Introductory AI concepts and foundations, covering basic AI techniques and applications",
+    link: "https://www.linkedin.com/posts/aditya-suresh-26b457298_ai-microsoft-edunet-activity-7333147161745903617-KxrI/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAEf4NbMBA_gbu08UFg_9KUxb9KDA3d2NCt4"
   },
   {
-    title: "React - The Complete Guide",
-    issuer: "Udemy",
-    date: "2023",
-    description: "In-depth React.js training including Hooks, Context API, Redux, and Next.js"
+    title: "AI & Data Analytics (Green Skills)",
+    issuer: "AICTE, Shell India & Edunet",
+    description: "Applied AI and data analytics with a focus on sustainable and green technologies",
+    link: "https://www.linkedin.com/posts/aditya-suresh-26b457298_skills4future-ai-dataanalytics-activity-7334262036190638080-SaFS"
   },
   {
-    title: "Three.js Journey",
-    issuer: "Three.js Journey",
-    date: "2024",
-    description: "Master 3D graphics in the browser with WebGL and Three.js"
+    title: "Microsoft Azure AI: Natural Language Processing",
+    issuer: "Microsoft",
+    description: "Hands-on training on building NLP solutions using Azure AI services",
+    link: "https://learn.microsoft.com/en-us/users/adityasuresh-1198/achievements/w27urs4n"
   },
   {
-    title: "AWS Certified Cloud Practitioner",
-    issuer: "Amazon Web Services",
-    date: "2024",
-    description: "Cloud computing fundamentals and AWS services certification"
+    title: "AI Agent Development on Azure",
+    issuer: "Microsoft",
+    description: "Developed AI agents and intelligent applications on Azure platform",
+    link: "https://learn.microsoft.com/en-us/users/adityasuresh-1198/achievements/3aygycrh?"
   },
   {
-    title: "Python Data Science",
-    issuer: "Coursera",
-    date: "2022",
-    description: "Data analysis, visualization, and machine learning with Python"
+    title: "Certificate of Conducting Webots Hackathon",
+    issuer: "Edunet",
+    description: "Organized and conducted a hackathon using Webots for robotics simulation",
+    link: "https://www.linkedin.com/feed/update/urn:li:activity:7413285080808214528/"
   }
 ];
 
@@ -1024,7 +1023,7 @@ function setupCertificateBoard() {
     color: rgba(180, 144, 202, 0.9);
     font-weight: 600;
   `;
-  certIssuer.textContent = `${cert.issuer} • ${cert.date}`;
+  certIssuer.textContent = cert.issuer;
   
   const certDesc = document.createElement('p');
   certDesc.style.cssText = `
@@ -2394,10 +2393,8 @@ if (targetMarker) {
   // Set correct rotation based on piece type
   const isKnight = (pieceType === 'N' || newModelName.includes('knight'));
   if (isKnight) {
-    // White knights always face forward (0°)
     newPiece.rotation.y = 0;
   } else {
-    // Other pieces: copy rotation from old piece (pawn)
     newPiece.rotation.copy(oldPiece.rotation);
   }
   
