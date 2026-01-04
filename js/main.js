@@ -147,9 +147,9 @@ let normalModeInteractionBlocked = false;
 
 const introDialogues = [
   "Welcome to my interactive 3D portfolio...",
-  "Click around to explore different areas of my work and interests.",
-  "Each section has its own story to tell.",
-  "Let's begin your journey!"
+  "To explore my technical skills, click on the laptop after selecting the desk",
+  "To view my certifications, click on the board at the back",
+  "Every section has its own story to tell, so please do check out everything in the room and thank you"
 ];
 
 const certificates = [
@@ -189,8 +189,8 @@ let certificateBoard = null;
 let certificateBoardVisible = false;
 
 const dialogueContent = {
-  sofa: "This is my cozy corner where I relax and brainstorm ideas. The family photos remind me of what matters most.",
-  chess: "I love strategy games! This chess set represents my analytical thinking and problem-solving skills.",
+  sofa: "A comfy corner to sit down with a friend",
+  chess: "This chess AI was built using a neural network. Limited computational power (aka a potato PC) held it back in training, so while it plays legal moves, its strategy is… questionable.",
   family: "Family is everything. These frames hold memories of the people who inspire and support me every day.",
   desk: "My workspace where creativity meets productivity. Every item here tells a story of late nights and breakthrough moments.",
   laptop: "This is where the magic happens. Code, designs, and ideas all come to life on this screen.",
