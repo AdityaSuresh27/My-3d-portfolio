@@ -1,5 +1,4 @@
 // chess-animations.js - Handles chess piece animations with sound
-console.log("♟️ Chess Animations Module Loading...");
 
 class ChessAnimations {
   constructor(chessBoard, pieceObjects, squareMarkers, THREE) {
@@ -32,14 +31,12 @@ class ChessAnimations {
     const pieceObj = this.pieceObjects[pieceName];
     
     if (!pieceObj) {
-      console.warn(`⚠️ Piece not found for: ${pieceName} at ${to}`);
       if (onComplete) onComplete();
       return;
     }
     
     const targetMarker = this.squareMarkers[to.toUpperCase()];
     if (!targetMarker) {
-      console.warn(`⚠️ Target marker not found for: ${to}`);
       if (onComplete) onComplete();
       return;
     }
@@ -60,8 +57,6 @@ class ChessAnimations {
       y: startPos.y,
       z: targetLocalPos.z
     };
-    
-    console.log(`🎬 Animating ${pieceName} from (${startPos.x.toFixed(3)}, ${startPos.y.toFixed(3)}, ${startPos.z.toFixed(3)}) to (${finalPos.x.toFixed(3)}, ${finalPos.y.toFixed(3)}, ${finalPos.z.toFixed(3)})`);
     
     const duration = 600;
     const startTime = performance.now();
@@ -90,7 +85,6 @@ class ChessAnimations {
       if (t < 1) {
         requestAnimationFrame(animate);
       } else {
-        console.log(`✅ Animation complete for ${pieceName}`);
         if (onComplete) onComplete();
       }
     };
@@ -103,7 +97,6 @@ class ChessAnimations {
   const pieceObj = this.pieceObjects[pieceName];
   
   if (!pieceObj) {
-    console.warn(`⚠️ Piece not found for: ${pieceName}`);
     if (onComplete) onComplete();
     return;
   }
@@ -114,7 +107,6 @@ class ChessAnimations {
   
   const targetMarker = this.squareMarkers[to.toUpperCase()];
   if (!targetMarker) {
-    console.warn(`⚠️ Target marker not found for: ${to}`);
     if (onComplete) onComplete();
     return;
   }
@@ -135,8 +127,6 @@ class ChessAnimations {
     y: startPos.y,
     z: targetLocalPos.z
   };
-  
-  console.log(`🎬 Animating ${pieceName} from (${startPos.x.toFixed(3)}, ${startPos.y.toFixed(3)}, ${startPos.z.toFixed(3)}) to (${finalPos.x.toFixed(3)}, ${finalPos.y.toFixed(3)}, ${finalPos.z.toFixed(3)})`);
   
   const duration = 600;
   const startTime = performance.now();
@@ -165,7 +155,6 @@ class ChessAnimations {
     if (t < 1) {
       requestAnimationFrame(animate);
     } else {
-      console.log(`✅ Animation complete for ${pieceName}`);
       if (onComplete) onComplete();
     }
   };
@@ -176,12 +165,10 @@ class ChessAnimations {
   fadeOutPiece(pieceName, onComplete = null) {
     const pieceObj = this.pieceObjects[pieceName];
     if (!pieceObj) {
-      console.warn(`⚠️ Piece to fade not found: ${pieceName}`);
       if (onComplete) onComplete();
       return;
     }
     
-    console.log(`👻 Fading out ${pieceName}`);
     
     const duration = 400;
     const startTime = performance.now();
@@ -210,7 +197,6 @@ class ChessAnimations {
         requestAnimationFrame(animate);
       } else {
         pieceObj.visible = false;
-        console.log(`✅ ${pieceName} faded out`);
         if (onComplete) onComplete();
       }
     };
@@ -267,12 +253,10 @@ class ChessAnimations {
   morphPiece(pieceName, newType, onComplete = null) {
     const pieceObj = this.pieceObjects[pieceName];
     if (!pieceObj) {
-      console.warn(`⚠️ Piece to morph not found: ${pieceName}`);
       if (onComplete) onComplete();
       return;
     }
     
-    console.log(`🔄 Morphing ${pieceName} to ${newType}`);
     
     const duration = 800;
     const startTime = performance.now();
@@ -315,7 +299,6 @@ class ChessAnimations {
       } else {
         pieceObj.rotation.y = 0;
         pieceObj.scale.set(originalScale.x, originalScale.y, originalScale.z);
-        console.log(`✅ ${pieceName} morphed to ${newType}`);
         if (onComplete) onComplete();
       }
     };
@@ -325,4 +308,3 @@ class ChessAnimations {
 }
 
 window.ChessAnimations = ChessAnimations;
-console.log("✅ Chess Animations Module Loaded");

@@ -1,5 +1,4 @@
 // chess-ai-browser.js - Browser-only Chess AI using ONNX
-console.log("♟️ Chess AI Browser Module Loading...");
 
 class ChessAIBrowser {
   constructor() {
@@ -12,7 +11,6 @@ class ChessAIBrowser {
     if (this.loaded || this.loading) return;
     
     this.loading = true;
-    console.log("🤖 Loading Chess AI model...");
     
     try {
       const options = {
@@ -26,10 +24,8 @@ class ChessAIBrowser {
       this.session = await ort.InferenceSession.create('./assets/models/chess_model.onnx', options);
       this.loaded = true;
       this.loading = false;
-      console.log("✅ Chess AI loaded successfully!");
       return true;
     } catch (error) {
-      console.error("❌ Failed to load Chess AI:", error);
       this.loading = false;
       return false;
     }
@@ -88,7 +84,6 @@ class ChessAIBrowser {
 
   async getBestMove(board, chessGame) {
     if (!this.loaded) {
-      console.warn("⚠️ Model not loaded yet");
       return this.getRandomLegalMove(board, chessGame);
     }
 
@@ -104,7 +99,6 @@ class ChessAIBrowser {
       const indexed = Array.from(moveLogits).map((val, idx) => ({ val, idx }));
       indexed.sort((a, b) => b.val - a.val);
       
-      console.log(`🤖 AI evaluating ${indexed.length} moves...`);
       
       for (let i = 0; i < Math.min(500, indexed.length); i++) {
         const moveIdx = indexed[i].idx;
@@ -121,16 +115,13 @@ class ChessAIBrowser {
         
         const piece = board[fromRank][fromFile];
         if (piece && piece.color === 'black' && chessGame && chessGame.isValidMove(from, to)) {
-          console.log(`✅ AI chose: ${from} → ${to} (rank ${i+1}, score: ${indexed[i].val.toFixed(2)})`);
           return { from, to, evaluation: evalScore };
         }
       }
       
-      console.warn('⚠️ No valid move in predictions, using random legal move');
       return this.getRandomLegalMove(board, chessGame);
       
     } catch (error) {
-      console.error("❌ AI inference error:", error);
       return this.getRandomLegalMove(board, chessGame);
     }
   }
@@ -156,14 +147,11 @@ class ChessAIBrowser {
     
     if (moves.length > 0) {
       const randomMove = moves[Math.floor(Math.random() * moves.length)];
-      console.log(`🎲 Random legal move: ${randomMove.from} → ${randomMove.to} (${moves.length} options)`);
       return randomMove;
     }
     
-    console.error('❌ No legal moves found!');
     return null;
   }
 }
 
 window.ChessAIBrowser = ChessAIBrowser;
-console.log("✅ Chess AI Browser Module Loaded");

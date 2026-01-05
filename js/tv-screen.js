@@ -53,8 +53,6 @@ setupCanvas() {
   this.texture.generateMipmaps = false;
   this.texture.needsUpdate = true;
   
-  console.log('📺 Canvas created:', this.canvas.width, 'x', this.canvas.height);
-  console.log('📺 Test pattern drawn');
 }
   
 setupAudio() {
@@ -71,7 +69,6 @@ setupAudio() {
   this.beepSound = new Audio('./assets/audio/beep.mp3');
   this.beepSound.volume = 0.5;
   
-  console.log('🔊 TV Audio system initialized');
 }
 
 playClickSound() {
@@ -153,7 +150,6 @@ setupControls() {
   }
   
 launchGame(gameIndex) {
-  console.log('🎮 Launching game:', this.games[gameIndex].name);
   
   // Play launch sound
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -193,7 +189,6 @@ setupGameMenuButton() {
   
   // Only create button on mobile devices
   if (!isMobile) {
-    console.log('Desktop device - GAME MENU button disabled (use ESC key instead)');
     this.gameMenuBtn = null;
     return;
   }
@@ -240,7 +235,6 @@ setupGameMenuButton() {
   document.body.appendChild(gameMenuBtn);
   this.gameMenuBtn = gameMenuBtn;
   
-  console.log('📱 Mobile device - GAME MENU button enabled');
 }
 
 activate() {
@@ -268,12 +262,8 @@ activate() {
     this.drawConsoleOS();
     this.texture.needsUpdate = true;
     
-    console.log('📺 TV Screen activated - Console OS ready');
-    console.log('Material type:', this.screenMesh.material.type);
-    console.log('Texture size:', this.texture.image.width, 'x', this.texture.image.height);
-    console.log('Texture needs update:', this.texture.needsUpdate);
   } else {
-    console.error('❌ TV screen mesh or material missing!');
+    console.error('TV screen mesh or material missing!');
   }
   
   // Start background music
@@ -286,7 +276,6 @@ activate() {
 
   setTimeout(() => {
     if (this.currentGame) {
-      console.log('📺 Restoring UI for game:', this.currentGame);
       
       // Show correct controls for current game
       if (this.currentGame === 'snake') {
@@ -304,10 +293,7 @@ activate() {
         this.gameMenuBtn.style.display = 'block';
       }
       
-      console.log('✅ UI restored for', this.currentGame);
     } else {
-      // We're in the menu - show menu controls
-      console.log('📺 Showing game menu UI');
       if (window.showMobileControls) {
         window.showMobileControls('menu');
       }
@@ -321,7 +307,6 @@ activate() {
 }
 
 updateUIForCurrentState() {
-  console.log('🔄 Updating UI for state:', this.currentGame || 'menu');
   
   if (this.currentGame) {
     // We're in a game - show game-specific controls
@@ -393,7 +378,6 @@ deactivate() {
   if (retryBtn) {
     retryBtn.style.display = 'none';
   }
-  console.log('TV Screen deactivated - All audio stopped');
 }
   
 update() {
@@ -1520,7 +1504,6 @@ inv.alienBullets = inv.alienBullets.filter(b => {
 }
 
 exitGame() {
-  console.log('🚪 Exiting game:', this.currentGame);
   
   this.currentGame = null;
   this._lastGameState = null; // Reset state tracker
@@ -1549,7 +1532,6 @@ exitGame() {
     window.showMobileControls('menu');
   }
   
-  console.log('✅ Returned to game selection menu');
 }
 }
 // Make it globally available

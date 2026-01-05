@@ -31,7 +31,6 @@ constructor() {
   }
 
   init() {
-    console.log('Loading screen initializing...');
     // Create loading screen elements
     const loadingScreen = document.createElement('div');
     loadingScreen.id = 'loadingScreen';
@@ -88,9 +87,8 @@ constructor() {
         this.complete();
       });
       
-      console.log('✅ Loading screen ready - waiting for assets');
     } else {
-      console.error('❌ AssetLoader not found!');
+      console.error('AssetLoader not found!');
     }
   }
 
@@ -111,9 +109,7 @@ constructor() {
   }
 
   updateProgress(newProgress) {
-    // Don't jump instantly - let animate() smooth it out
     this.targetProgress = Math.min(newProgress, 100);
-    console.log(`🌊 Target progress updated: ${this.targetProgress.toFixed(1)}%`);
   }
 
   drawStars() {
@@ -477,8 +473,6 @@ complete() {
     // Wait for visual progress to catch up to 100%
     const waitForFullFill = () => {
       if (this.progress >= 98) {
-        // Now fully filled - quick transition
-        console.log('🌊 Circle fully filled - starting transition');
         setTimeout(() => {
           this.startTransition();
         }, 400); // Reduced from 800ms to 400ms

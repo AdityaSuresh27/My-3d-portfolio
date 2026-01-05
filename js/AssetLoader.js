@@ -37,9 +37,6 @@ class AssetLoader {
     } else {
       this.progress = (this.loadedAssets / this.totalAssets) * 100;
     }
-
-    console.log(`📦 Asset Progress: ${this.loadedAssets}/${this.totalAssets} = ${Math.round(this.progress)}%`);
-
     // Notify all progress callbacks with smooth updates
     this.onProgressCallbacks.forEach(callback => {
       callback(this.progress);
@@ -47,7 +44,6 @@ class AssetLoader {
 
     // Check if complete
     if (this.loadedAssets >= this.totalAssets && this.totalAssets > 0) {
-      console.log('✅ All assets loaded! Starting transition...');
       this.onCompleteCallbacks.forEach(callback => {
         callback();
       });

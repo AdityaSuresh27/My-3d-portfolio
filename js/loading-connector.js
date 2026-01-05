@@ -23,9 +23,6 @@ class LoadingConnector {
   updateProgress() {
     const diff = this.targetProgress - this.progress;
     this.progress += diff * 0.1;
-    
-    // Update any progress indicators if needed
-    console.log(`Loading: ${Math.round(this.progress)}%`);
   }
 
   complete() {

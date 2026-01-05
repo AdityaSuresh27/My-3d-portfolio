@@ -1,5 +1,4 @@
 // chess-interactions.js - Handles all chess piece interactions
-console.log("♟️ Chess Interactions Module Loading...");
 
 class ChessInteractions {
   constructor(scene, camera, raycaster, mouse, pieceObjects, squareMarkers, chessBoard, chessPieceNames) {
@@ -199,4 +198,3 @@ class ChessInteractions {
 }
 
 window.ChessInteractions = ChessInteractions;
-console.log("✅ Chess Interactions Module Loaded");

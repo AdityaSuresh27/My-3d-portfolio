@@ -86,8 +86,7 @@ class AudioManager {
       
       // Fade in from 0 to target volume
       await this.fadeVolume(this.targetVolume, 2000);
-      
-      console.log('🎵 Background music started');
+
     } catch (err) {
       console.warn('Audio playback failed:', err);
     }
@@ -150,8 +149,7 @@ class AudioManager {
     // Set instantly
     this.audio.volume = actualVolume;
     this.targetVolume = actualVolume;
-    
-    console.log('🔊 Volume set instantly to:', Math.round(this.baseVolume * 100) + '%', `(actual: ${Math.round(actualVolume * 100)}%)`);
+   
   }
   
   // MODIFIED: Set volume with fade (for UI controls outside radio)
@@ -166,7 +164,6 @@ class AudioManager {
       this.targetVolume = this.baseVolume * this.dimmedPercentage;
     }
     
-    console.log('🔊 Volume set to:', Math.round(this.baseVolume * 100) + '%');
   }
   
   async updateForMode(mode) {
@@ -176,17 +173,14 @@ class AudioManager {
       // Mute = 0% of base volume
       newTargetVolume = this.baseVolume * this.mutedPercentage;
       this.isDimmed = true;
-      console.log('🔇 Music muting for mode:', mode);
     } else if (this.fullVolumeModes.includes(mode)) {
       // Full volume = 100% of base volume
       newTargetVolume = this.baseVolume;
       this.isDimmed = false;
-      console.log('🔊 Music full volume for mode:', mode);
     } else if (this.dimmedModes.includes(mode)) {
       // Dimmed = 25% of base volume (or whatever percentage is set)
       newTargetVolume = this.baseVolume * this.dimmedPercentage;
       this.isDimmed = true;
-      console.log('🔉 Music dimming for mode:', mode, `(${Math.round(this.dimmedPercentage * 100)}% of base)`);
     } else {
       return;
     }

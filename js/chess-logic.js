@@ -1,5 +1,4 @@
 // chess-logic.js - Enhanced Chess game logic with check/checkmate/special moves
-console.log("♟️ Chess Logic Module Loading...");
 
 class ChessGame {
   constructor() {
@@ -55,7 +54,6 @@ class ChessGame {
     this.enPassantTarget = null; // Track en passant opportunity
     this.promotionCallback = null; // For handling promotion UI
     
-    console.log("✅ Chess game initialized");
   }
   
   initializeBoard() {
@@ -338,12 +336,7 @@ class ChessGame {
   
   const piece = this.board[fromRank][fromFile];
   
-  // CRITICAL: Validate piece exists
   if (!piece) {
-    console.error(`❌ No piece at ${from}!`);
-    console.log('Board state:', this.board[fromRank]);
-    console.log('squareToPieceName:', this.squareToPieceName);
-    console.log('pieceNameMap:', this.pieceNameMap);
     return null;
   }
   
@@ -412,7 +405,6 @@ if (piece.type.toLowerCase() === 'p' && to === this.enPassantTarget && !captured
           const pieceName = this.squareToPieceName[to];
           if (pieceName && this.pieceNameMap[pieceName]) {
             this.pieceNameMap[pieceName].type = promotionPiece;
-            console.log(`✅ Promoted ${pieceName} to ${promotionPiece} in pieceNameMap`);
           }
         }
       }
@@ -433,9 +425,6 @@ if (pieceName) {
   // CRITICAL: Update pieceNameMap square location
   if (this.pieceNameMap[pieceName]) {
     this.pieceNameMap[pieceName].square = to;
-    
-    // IMPORTANT: Don't update type here - it's handled in promotion section
-    console.log(`✅ Updated ${pieceName} position: ${from} → ${to}`);
   }
 }
 
@@ -444,7 +433,6 @@ if (capturedPieceName) {
   delete this.squareToPieceName[to]; // Remove old mapping first
   if (this.pieceNameMap[capturedPieceName]) {
     delete this.pieceNameMap[capturedPieceName];
-    console.log(`✅ Removed captured piece ${capturedPieceName} from pieceNameMap`);
   }
   // Re-add the moving piece to the 'to' square
   if (pieceName) {
@@ -530,4 +518,3 @@ if (capturedPieceName) {
 }
 
 window.ChessGame = ChessGame;
-console.log("✅ Chess Logic Module Loaded");

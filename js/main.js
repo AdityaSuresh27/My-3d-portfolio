@@ -53,31 +53,31 @@ const shelfPositions = [
   {
     camera: { x: -0.0859741774289951, y: 1.5291292483291543, z: -0.2568612158995307 },
     target: { x: -0.06256457322971105, y: 1.572253178788147, z: -1.7993055491816197 },
-    dialogue: "Top shelf: My achievements and certifications - proof of continuous learning.",
+    dialogue: "I minored in robotics because I love seeing things I build actually move, even though my main focus is software. You can scroll through this shelf using the arrow keys or your mouse",
     dialoguePos: "right"
   },
   {
     camera: { x: 0.15686608641575478, y: 1.2410753609864427, z: -0.19765471374559174 },
     target: { x: 0.15692930967994168, y: 1.229893186878728, z: -1.3320114959046097 },
-    dialogue: "Second shelf: Books and resources that shaped my technical journey.",
+    dialogue: "Click on the radio if you want to change the music and try out different tracks",
     dialoguePos: "left"
   },
   {
     camera: { x: -0.135033445364163, y: 0.9267996643472357, z: -0.27444583806655487 },
     target: { x: -0.11162336115874623, y: 0.969923594806249, z: -1.8168901640635515 },
-    dialogue: "Third shelf: Tools and technologies I work with daily.",
+    dialogue: "I love birds(In fact I had two lovebirds growing up) and getting lost in books like Harry Potter, Percy Jackson, The Alchemist, Murder on the Orient Express and more. Each story sparks my imagination and takes me to a different world",
     dialoguePos: "right"
   },
   {
     camera: { x: 0.17578137380019013, y: 0.6389576007712021, z: -0.1917181499956706 },
     target: { x: 0.17584458850885093, y: 0.6277754266634874, z: -1.326074932155163 },
-    dialogue: "Fourth shelf: Personal projects and experimental work.",
+    dialogue: "On the talk of sports, I play badminton and I have learnt taekwondo for a 4 years and acheived the rank of red belt",
     dialoguePos: "left"
   },
   {
     camera: { x: -0.10904628393301713, y: 0.31898528375917456, z: -0.2910584604488202 },
     target: { x: -0.08563192086289545, y: 0.350444516581331, z: -1.8337847124110054 },
-    dialogue: "Bottom shelf: Hardware and gadgets that fuel my passion for tech.",
+    dialogue: "Another hobby I love is cooking, especially baking. I enjoy making treats and sharing them with my friends and family",
     dialoguePos: "right"
   }
 ];
@@ -146,9 +146,9 @@ let hasSeenIntroDialogue = false;
 let normalModeInteractionBlocked = false;
 
 const introDialogues = [
-  "Welcome to my interactive 3D portfolio...",
-  "To explore my technical skills, click on the laptop after selecting the desk",
-  "To view my certifications, click on the board at the back",
+  "Welcome to my interactive 3D portfolio. I designed this space to reflect what a comfortable room feels like to me, a place where you can explore and get to know me",
+  "To explore my technical skills, click on the laptop on the desk under the window",
+  "To view my certifications, click on the board at the back, to the left of the window",
   "Every section has its own story to tell, so please do check out everything in the room and thank you"
 ];
 
@@ -190,22 +190,20 @@ let certificateBoardVisible = false;
 
 const dialogueContent = {
   sofa: "A comfy corner to sit down with a friend",
-  chess: "This chess AI was built using a neural network. Limited computational power (aka a potato PC) held it back in training, so while it plays legal moves, its strategy is… questionable.",
-  family: "Family is everything. These frames hold memories of the people who inspire and support me every day.",
-  desk: "My workspace where creativity meets productivity. Every item here tells a story of late nights and breakthrough moments.",
-  laptop: "This is where the magic happens. Code, designs, and ideas all come to life on this screen.",
-  frame: "These frames showcase my passion for gaming and fantasy worlds. They remind me to never stop exploring new realms.",
-  tv: "My retro gaming corner! Use WASD to navigate and ENTER to select your game. Let's play!",
-  shelf: "Scroll through my collection - each shelf tells a different story of my journey."
+  chess: "This chess AI was built using an ML neural network model. Limited computational power (aka a potato PC) held it back in training, so while it plays legal moves, its strategy is… questionable",
+  family: "I sincerely thank my family, who helped and encouraged me throughout my life and made it possible for me to reach where I am today",
+  desk: "A calm place to sit and work, facing the window, ready to start with a cup of coffee",
+  laptop: "Welcome to my portfolio. You can check out my projects, skills, learn more about me, and find my contact details and GitHub work here",
+  frame: "I enjoy gaming and game development, with a particular love for fantasy stories and worlds",
+  tv: "This is my gaming corner. Use WASD to navigate and ENTER to choose a game. Have fun!"
 };
 
 // Sofa mode objects
 let beanBags = [];
 let tableObj = null;
 
-// Wait for DOM, then set up loading tracking BEFORE loading anything
+//After heavy compression some of my textures got corrupted, so I am manually applying the texture
 window.addEventListener('DOMContentLoaded', () => {
-  console.log('🚀 DOM loaded - setting up asset tracking');
   
   // Initialize loading screen FIRST
   if (window.loadingScreen) {
@@ -228,42 +226,29 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // Register all assets BEFORE loading starts
     registerAllAssets();
-    
-    // Small delay to ensure asset counter is ready, then start loading
+
     setTimeout(() => {
-      console.log(`📦 Starting to load ${window.assetLoader.totalAssets} assets...`);
       loadScene();
     }, 100);
   }, 200);
 });
 
-// NEW FUNCTION: Register all assets that will be loaded
 function registerAllAssets() {
-  console.log('📝 Registering assets for tracking...');
   
   // 1. Main GLB scene file
   window.assetLoader.addAsset();
-  console.log('  - Registered: scene.glb');
   
   // 2. Table texture (loaded separately in loadScene)
   window.assetLoader.addAsset();
-  console.log('  - Registered: table texture');
   
-  // 3. Logo image for loading screen (already loaded)
-  // (LoadingScreen handles this internally)
-  
-  // 4. Chess AI model (if it exists)
   const chessModelPath = './assets/models/chess_model.onnx';
   fetch(chessModelPath, { method: 'HEAD' })
     .then(() => {
       window.assetLoader.addAsset();
-      console.log('  - Registered: chess AI model');
     })
     .catch(() => {
-      console.log('  - Chess AI model not found (optional)');
     });
   
-  console.log(`✅ Total assets registered: ${window.assetLoader.totalAssets}`);
 }
 
 function init() {
@@ -333,8 +318,8 @@ function updateCameraDebug() {
   const pos = camera.position;
   const target = controls.target;
   
-  console.log(`📷 Pos:(${pos.x.toFixed(4)}, ${pos.y.toFixed(4)}, ${pos.z.toFixed(4)})`);
-  console.log(`🎯 Target:(${target.x.toFixed(4)}, ${target.y.toFixed(4)}, ${target.z.toFixed(4)})`);
+  //console.log(`📷 Pos:(${pos.x.toFixed(4)}, ${pos.y.toFixed(4)}, ${pos.z.toFixed(4)})`);
+  //console.log(`🎯 Target:(${target.x.toFixed(4)}, ${target.y.toFixed(4)}, ${target.z.toFixed(4)})`);
 }
 
 
@@ -347,42 +332,49 @@ function setupUniversalExitButton() {
     btn.innerHTML = '✕';
     btn.style.cssText = `
         position: fixed;
-        top: 25px;
-        right: 25px;
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, rgba(30, 35, 50, 0.95) 0%, rgba(25, 30, 45, 0.98) 100%);
+        top: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(20, 25, 40, 0.95) 0%, rgba(15, 20, 35, 0.98) 100%);
         color: #5ee7df;
-        border: 2px solid rgba(94, 231, 223, 0.6);
-        font-size: 20px;
-        font-weight: 600;
+        border: 2px solid rgba(94, 231, 223, 0.5);
+        font-size: 26px;
+        font-weight: 400;
         cursor: pointer;
         display: none;
-        z-index: 1000;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 
-                    0 0 20px rgba(94, 231, 223, 0.2),
-                    inset 0 1px 0 rgba(94, 231, 223, 0.1);
-        backdrop-filter: blur(10px);
+        z-index: 10002;
+        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 
+                    0 0 30px rgba(94, 231, 223, 0.15),
+                    inset 0 1px 0 rgba(94, 231, 223, 0.2);
+        backdrop-filter: blur(12px);
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
       `;
     btn.addEventListener('mouseenter', () => {
-      btn.style.background = 'linear-gradient(135deg, rgba(0, 16, 98, 0.95) 0%, rgba(0, 16, 98, 0.95) 100%)';
-      btn.style.borderColor = 'rgba(0, 0, 0, 0.8)';
+      btn.style.background = 'linear-gradient(135deg, rgba(94, 231, 223, 0.25) 0%, rgba(94, 200, 223, 0.3) 100%)';
+      btn.style.borderColor = 'rgba(94, 231, 223, 0.9)';
       btn.style.color = '#ffffff';
-      btn.style.transform = 'scale(1.08) translateY(-2px)';
-      btn.style.boxShadow = '0 6px 24px rgba(26, 42, 123, 0.6), 0 0 30px rgba(255, 75, 100, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+      btn.style.transform = 'scale(1.15) rotate(90deg)';
+      btn.style.boxShadow = '0 6px 30px rgba(94, 231, 223, 0.4), 0 0 40px rgba(94, 231, 223, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3)';
     });
     btn.addEventListener('mouseleave', () => {
-      btn.style.background = 'linear-gradient(135deg, rgba(30, 35, 50, 0.95) 0%, rgba(25, 30, 45, 0.98) 100%)';
-      btn.style.borderColor = 'rgba(94, 231, 223, 0.6)';
+      btn.style.background = 'linear-gradient(135deg, rgba(20, 25, 40, 0.95) 0%, rgba(15, 20, 35, 0.98) 100%)';
+      btn.style.borderColor = 'rgba(94, 231, 223, 0.5)';
       btn.style.color = '#5ee7df';
-      btn.style.transform = 'scale(1) translateY(0)';
-      btn.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.6), 0 0 20px rgba(94, 231, 223, 0.2), inset 0 1px 0 rgba(94, 231, 223, 0.1)';
+      btn.style.transform = 'scale(1) rotate(0deg)';
+      btn.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.5), 0 0 30px rgba(94, 231, 223, 0.15), inset 0 1px 0 rgba(94, 231, 223, 0.2)';
     });
 btn.addEventListener('click', exitCurrentMode);
 btn.style.pointerEvents = 'auto'; 
+btn.style.display = 'none'; 
 document.body.appendChild(btn);
   }
   
@@ -399,30 +391,24 @@ function setupCameraToggle() {
   
   if (!toggleSwitch) return;
   
-  // Click on entire container (not just switch)
   toggleContainer.addEventListener('click', () => {
     cameraControlEnabled = !cameraControlEnabled;
     
     if (cameraControlEnabled) {
-      // UNLOCK camera - enable controls
       toggleSwitch.classList.add('active');
       controls.enabled = true;
       controls.enablePan = true;
       controls.enableZoom = true;
       controls.enableRotate = true;
       controls.enableDamping = true;
-      console.log('📷 Camera controls UNLOCKED');
     } else {
-      // LOCK camera - disable controls AND return to default position
       toggleSwitch.classList.remove('active');
       
-      // CRITICAL: Disable ALL controls
       controls.enabled = false;
       controls.enablePan = false;
       controls.enableZoom = false;
       controls.enableRotate = false;
-      
-      // Animate back to normal position
+
       animateCameraTo(
         normalModeCameraPos.x, normalModeCameraPos.y, normalModeCameraPos.z,
         normalModeCameraTarget.x, normalModeCameraTarget.y, normalModeCameraTarget.z
@@ -441,12 +427,8 @@ function setupMobileControls() {
   
   if (!isMobile) return;
   
-  console.log('📱 Mobile device detected - creating touch controls');
-  
-  // Force fullscreen on mobile
   if (document.documentElement.requestFullscreen) {
     document.documentElement.requestFullscreen().catch(err => {
-      console.log('Fullscreen request failed:', err);
     });
   }
   
@@ -478,7 +460,6 @@ function setupMobileControls() {
     pointer-events: auto;
   `;
   
-  // Create D-pad buttons (UP, DOWN, LEFT, RIGHT)
   const dpadButtons = {
     up: { row: 1, col: 2, symbol: '▲', keys: ['w', 'ArrowUp'], id: 'btnUp' },
     left: { row: 2, col: 1, symbol: '◄', keys: ['a', 'ArrowLeft'], id: 'btnLeft' },
@@ -861,7 +842,6 @@ function setupDialogueSystem() {
 closeBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   e.preventDefault();
-  console.log('❌ X button clicked - hiding dialogue');
   dialogueBox.style.pointerEvents = 'auto';
   
 
@@ -1090,8 +1070,6 @@ function showCertificateBoard() {
     certificateBoard.style.opacity = '1';
     certificateBoard.style.transform = 'translate(-50%, -50%) scale(1)';
   }, 100);
-  
-  console.log('Certificate board shown');
 }
 
 function hideCertificateBoard() {
@@ -1105,8 +1083,6 @@ function hideCertificateBoard() {
   setTimeout(() => {
     certificateBoard.style.display = 'none';
   }, 600);
-  
-  console.log('📋 Certificate board hidden');
 }
 
 function playBoardAudio(audioFile) {
@@ -1118,13 +1094,11 @@ function playBoardAudio(audioFile) {
   
   // Create and play new audio
   boardAudio = new Audio(audioFile);
-  boardAudio.volume = 0.5; // Adjust volume as needed
+  boardAudio.volume = 0.5; 
   
   boardAudio.play().catch(err => {
     console.warn('Audio playback failed:', err);
   });
-  
-  console.log('🔊 Playing board audio:', audioFile);
 }
 
 function setupRadioPanel() {
@@ -1350,8 +1324,6 @@ function showRadioPanel() {
       document.getElementById('powerBtn').classList.add('active');
     }
   }
-  
-  console.log('📻 Radio panel opened - interactions blocked');
 }
 
 function hideRadioPanel() {
@@ -1374,8 +1346,6 @@ function hideRadioPanel() {
   if (exitBtn) exitBtn.style.pointerEvents = 'auto';
   
   radioPanel.classList.remove('active');
-  
-  console.log('📻 Radio panel closed - interactions restored');
 }
 
 function showIntroDialogue() {
@@ -1458,8 +1428,6 @@ function hideDialogueBox() {
 function showModeDialogue(mode) {
   if (!dialogueContent[mode]) return;
   
-  console.log('💬 Showing dialogue for mode:', mode);
-  
   // CRITICAL: Clear any old content and reset completely
   dialogueText.textContent = '';
   if (typingTimeout) {
@@ -1541,8 +1509,6 @@ function showModeDialogue(mode) {
 }
 
 function hideModeDialogue() {
-  console.log('🚫 Hiding mode dialogue completely');
-  
   // Clear any ongoing typing immediately
   if (typingTimeout) {
     clearTimeout(typingTimeout);
@@ -1620,7 +1586,6 @@ function exitCurrentMode() {
   if (window.audioManager) {
     window.audioManager.updateForMode('normal');
   }
-  console.log(`Exiting ${currentMode} mode`);
   
   hideModeDialogue();
   
@@ -1688,7 +1653,6 @@ function exitLaptopMode() {
     -4.972655773234403, 1.0606562348962882, 1.0511241695012494
   );
   
-  console.log("Exited laptop mode to desk mode");
 }
 
 function exitChessMode() {
@@ -1725,7 +1689,6 @@ function exitChessMode() {
     -2.08570808037242, 0.985057465166684, 2.3500947571065485
   );
   
-  console.log("♟️ Exited chess mode to sofa mode");
 }
 
 function exitFamilyMode() {
@@ -1747,7 +1710,6 @@ function exitFamilyMode() {
     -2.08570808037242, 0.985057465166684, 2.3500947571065485
   );
   
-  console.log("Exited family mode to sofa mode");
 }
 
 function exitSofaMode() {
@@ -1822,8 +1784,6 @@ function exitFrameMode() {
     -3.2778681575996984, 1.258073897524341, 1.1635086207775198,
     -4.972655773234403, 1.0606562348962882, 1.0511241695012494
   );
-  
-  console.log("Exited frame mode to desk mode");
 }
 
 function exitBoardMode() {
@@ -1843,7 +1803,6 @@ function exitBoardMode() {
   const exitAudio = new Audio('./assets/audio/bo2.mp3');
   exitAudio.addEventListener('loadedmetadata', () => {
     const audioDuration = exitAudio.duration * 1000; 
-    console.log('Exit audio duration:', audioDuration + 'ms');
     
     setTimeout(() => {
       // Return to normal mode
@@ -1877,7 +1836,6 @@ function exitTVMode() {
   
   // CRITICAL: Store current game state BEFORE deactivating
   if (tvScreen && tvScreen.currentGame) {
-    console.log('📺 Storing game state:', tvScreen.currentGame);
     tvScreen.wasInGame = true;
     tvScreen.savedGameState = tvScreen.currentGame;
   } else {
@@ -1958,8 +1916,6 @@ function enterShelfMode() {
   setTimeout(() => {
     showShelfDialogue(0);
   }, 2500);
-  
-  console.log("📚 Entered shelf mode at position 0");
 }
 
 function exitShelfMode() {
@@ -1997,8 +1953,6 @@ function onMouseWheel(event) {
   // Move target position smoothly by small increments
   targetShelfPosition += delta * 0.1; // Smooth incremental movement
   targetShelfPosition = Math.max(0, Math.min(4, targetShelfPosition)); // Clamp to bounds
-  
-  console.log(`Scroll: current=${currentShelfPosition.toFixed(2)}, target=${targetShelfPosition.toFixed(2)}`);
 }
 
 function onKeyDown(event) {
@@ -2009,11 +1963,8 @@ function onKeyDown(event) {
     
     const delta = event.key === 'ArrowDown' ? 1 : -1;
     
-    // Move target position smoothly by small increments (same as scroll)
     targetShelfPosition += delta * 0.1;
-    targetShelfPosition = Math.max(0, Math.min(4, targetShelfPosition)); // Clamp to bounds
-    
-    console.log(`Arrow ${event.key}: current=${currentShelfPosition.toFixed(2)}, target=${targetShelfPosition.toFixed(2)}`);
+    targetShelfPosition = Math.max(0, Math.min(4, targetShelfPosition));
   }
 }
 
@@ -2119,8 +2070,6 @@ function showShelfDialogue(positionIndex) {
     dialogueBox.style.transform = dialogueBox.style.transform.replace('scale(0.95)', 'scale(1)');
     typewriterEffect(pos.dialogue);
   }, 400);
-  
-  console.log(`💬 Showing shelf dialogue for position ${positionIndex}: ${pos.dialoguePos}`);
 }
 
 function animateCameraTo(posX, posY, posZ, targetX, targetY, targetZ) {
@@ -2159,7 +2108,6 @@ function setupChessUI() {
   
   document.getElementById('resetBtn').addEventListener('click', () => {
   if (isResetting || isAnimating) {
-    console.log('⏸️ Reset blocked - please wait');
     return;
   }
   resetChessGame();
@@ -2244,7 +2192,6 @@ function hidePromotionUI() {
 
 function handlePromotionChoice(pieceType) {
   if (!pendingPromotionMove) {
-    console.warn('No pending promotion move');
     return;
   }
   
@@ -2252,14 +2199,11 @@ function handlePromotionChoice(pieceType) {
   
   const { from, to, isAI } = pendingPromotionMove;
   
-  console.log(`✅ Promotion choice: ${pieceType} at ${to}`);
-  
   // Get the piece at destination (already moved there)
   const [toFile, toRank] = chessGame.squareToIndices(to);
   const piece = chessGame.board[toRank][toFile];
   
   if (!piece) {
-    console.error(`❌ No piece found at ${to} for promotion!`);
     isProcessingMove = false;
     return;
   }
@@ -2272,7 +2216,6 @@ function handlePromotionChoice(pieceType) {
   const pieceName = chessGame.squareToPieceName[to];
   if (pieceName && chessGame.pieceNameMap[pieceName]) {
     chessGame.pieceNameMap[pieceName].type = pieceType;
-    console.log(`✅ Updated pieceNameMap: ${pieceName} -> ${pieceType}`);
   }
   
   // Update move history
@@ -2296,7 +2239,6 @@ function handlePromotionChoice(pieceType) {
   const newModelName = getModelNameForPromotion(pieceType, color);
   
   if (pieceName && newModelName && pieceObjects[newModelName]) {
-    console.log(`🔄 Replacing ${pieceName} model with ${newModelName}`);
     replacePromotedPieceModel(pieceName, newModelName, to, pieceType);
   }
   
@@ -2308,7 +2250,6 @@ function handlePromotionChoice(pieceType) {
       chessGame.aiThinking = false;
       updateChessUI();
       isProcessingMove = false;
-      console.log('✅ AI promotion complete - interactions restored');
     } else {
       updateChessUI();
       chessInteractions.resetSelection();
@@ -2343,11 +2284,9 @@ function replacePromotedPieceModel(oldPieceName, newModelName, square, pieceType
   const templatePiece = pieceObjects[newModelName];
   
   if (!oldPiece || !templatePiece) {
-    console.warn('Cannot replace piece model - missing pieces');
     return;
   }
   
-  console.log(`🔄 Replacing ${oldPieceName} with ${newModelName}`);
   
   const newPiece = templatePiece.clone(true);
   newPiece.traverse((child) => {
@@ -2428,19 +2367,15 @@ if (targetMarker) {
       chessInteractions.whitePieceObjects.push(newPiece);
     }
   }
-  
-  console.log(`✅ Replaced ${oldPieceName} with ${newModelName} at Y=${correctY.toFixed(4)}, rotation=${newPiece.rotation.y.toFixed(2)}`);
 }
 
 function resetChessGame() {
   // Block if already resetting or animating
   if (isResetting || isAnimating) {
-    console.log('⏸️ Reset blocked - operation in progress');
     return;
   }
   
   isResetting = true;
-  console.log('🔄 Starting chess reset...');
   
   // STEP 1: Clear ALL game state immediately
   if (chessInteractions) {
@@ -2459,7 +2394,6 @@ function resetChessGame() {
   
   // STEP 2: Store the ORIGINAL board state from when game loaded
   const originalBoardState = {
-    // White pieces - EXACT starting positions (LOWERCASE)
     'White_rook1': { square: 'h1', type: 'R', color: 'white' },
     'White_knight1': { square: 'g1', type: 'N', color: 'white' },
     'White_bishop1': { square: 'f1', type: 'B', color: 'white' },
@@ -2477,7 +2411,6 @@ function resetChessGame() {
     'wp7': { square: 'b2', type: 'P', color: 'white' },
     'wp8': { square: 'a2', type: 'P', color: 'white' },
     
-    // Black pieces - EXACT starting positions (LOWERCASE)
     'Black_rook_1': { square: 'h8', type: 'r', color: 'black' },
     'Black_knight_1': { square: 'g8', type: 'n', color: 'black' },
     'Black_bishop_1': { square: 'f8', type: 'b', color: 'black' },
@@ -2504,11 +2437,8 @@ function resetChessGame() {
     }
   });
   
-  console.log(`🧹 Found ${promotedPieces.length} promoted pieces to remove`);
-  
   // Remove promoted pieces completely
   promotedPieces.forEach(({ name, piece }) => {
-    console.log(`🗑️ Removing promoted piece: ${name}`);
     
     // Dispose geometry and material
     if (piece.geometry) piece.geometry.dispose();
@@ -2537,7 +2467,6 @@ function resetChessGame() {
   Object.entries(originalBoardState).forEach(([name, data]) => {
     let originalPiece = null;
     
-    // Search for original model in chessBoard first
     chessBoard.traverse((child) => {
       if (child.name === name && 
           child.userData.isOriginalModel && 
@@ -2605,7 +2534,6 @@ function resetChessGame() {
         }
       }
       
-      console.log(`✅ Restored original piece: ${name}`);
     } else {
       console.warn(`⚠️ Could not find original model for: ${name}`);
     }
@@ -2650,8 +2578,6 @@ function resetChessGame() {
           }
         }
       });
-      
-      console.log(`📍 Reset ${name} to ${data.square} at Y=${correctY.toFixed(4)}`);
     }
   });
   
@@ -2694,11 +2620,7 @@ function resetChessGame() {
   chessGame.board.turn = 'white';
   chessGame.enPassantTarget = null;
   chessGame.moveHistory = [];
-  
-  console.log('✅ Game state rebuilt:');
-  console.log('  - pieceNameMap entries:', Object.keys(chessGame.pieceNameMap).length);
-  console.log('  - squareToPieceName entries:', Object.keys(chessGame.squareToPieceName).length);
-  console.log('  - Sample square check (e2):', chessGame.squareToPieceName['e2']);
+
   
   // STEP 8: Final cleanup
   if (chessInteractions) {
@@ -2718,7 +2640,6 @@ function resetChessGame() {
   setTimeout(() => {
     isResetting = false;
     isProcessingMove = false;
-    console.log('✅ Reset complete - interactions restored');
   }, 500);
 }
 
@@ -2754,7 +2675,6 @@ function loadScene() {
   loader.load(
     "./assets/models/scene.glb",
     (gltf) => {
-      console.log('✅ GLB scene loaded');
       // Mark GLB as loaded
       if (window.assetLoader) {
         window.assetLoader.assetLoaded();
@@ -2770,7 +2690,6 @@ function loadScene() {
           // FIX CORRUPTED MATERIALS FROM COMPRESSION
           if (child.material) {
             if (child.material.transmission !== undefined && child.material.transmission > 0) {
-              console.warn('⚠️ Fixing transmission material:', child.name);
               const oldColor = child.material.color ? child.material.color.clone() : new THREE.Color(0xcccccc);
               child.material = new THREE.MeshStandardMaterial({
                 color: oldColor,
@@ -2792,13 +2711,11 @@ function loadScene() {
               }
               child.material.side = THREE.DoubleSide;
               child.material.needsUpdate = true;
-              console.log('🖼️ Fixed fantasy frame material:', child.name);
             }
             
             child.material = child.material.clone();
             // FIX WINDOWS - Make Object_58 and Object_60 transparent
             if (child.name === "Object_58" || child.name === "Object_60") {
-              console.log('🪟 Making window transparent:', child.name);
               child.material = new THREE.MeshPhysicalMaterial({
                 color: 0x88ccff,
                 metalness: 0,
@@ -2817,7 +2734,6 @@ function loadScene() {
           if (child.name === "laptop_laptop_0") {
             laptopParts.push(child);
             deskParts.push(child);
-            console.log('💻 Laptop body found');
           }
 
           if (child.name === "screen_laptopScreen_0") {
@@ -2828,9 +2744,6 @@ function loadScene() {
             child.position.y += 0.002;
             child.position.z -= 0;
             child.rotation.x -= 0.055;
-            console.log('Original UV data:', child.geometry.attributes.uv?.array.slice(0, 8));
-            console.log('Original rotation:', child.rotation);
-            console.log('Original position:', child.position);
             
             // Get screen's world position and size
             child.geometry.computeBoundingBox();
@@ -2843,8 +2756,7 @@ function loadScene() {
             const originalRotation = child.rotation.clone();
             const originalScale = child.scale.clone();
             const originalQuaternion = child.quaternion.clone();
-            
-            console.log('🔥 REPLACING corrupted screen geometry...');
+          
             
             const oldGeometry = child.geometry;
             
@@ -2877,7 +2789,6 @@ function loadScene() {
               opacity: 1.0
             });
             
-            console.log('✅ Screen geometry REPLACED');
           }
           
           if (child.name === "chess_board") {
@@ -2888,13 +2799,11 @@ function loadScene() {
           if (child.name === "Bean_Bag_m_chair_0" || child.name === "Bean_Bag_m_chair_0_1") {
             beanBags.push(child);
             sofaParts.push(child);
-            console.log('🛋️ Bean bag found:', child.name);
           }
           
           if (child.name === "fam_frame" || child.name === "fam_frame2") {
             familyFrameParts.push(child);
             sofaParts.push(child);
-            console.log(`🖼️ Family frame found: ${child.name}`);
           }
           
           
@@ -2903,13 +2812,9 @@ function loadScene() {
         sofaParts.push(child);
         child.position.x += 0.02; 
         
-        console.log('🪑 Table found - original material:', child.material?.type);
-        console.log('🪑 Table color before texture:', child.material?.color);
-        
         // Load and apply texture
         const textureLoader = new THREE.TextureLoader();
         textureLoader.load('./assets/icons/texture.jpg', (texture) => {
-          console.log('✅ Texture loaded successfully:', texture);
 
           // Mark texture as loaded
           if (window.assetLoader) {
@@ -2932,22 +2837,15 @@ function loadScene() {
           });
           
           child.material.needsUpdate = true;
-          
-          console.log('🪑 Table texture applied with NEW material');
-          console.log('🪑 Texture size:', texture.image?.width, 'x', texture.image?.height);
+        
         }, 
         (progress) => {
           console.log('📥 Loading texture:', (progress.loaded / progress.total * 100).toFixed(0) + '%');
         },
         (err) => {
-          console.error('❌ Failed to load table texture:', err);
-          console.error('❌ Check if file exists at: ./assets/icons/texture.jpg');
+          console.error('Failed to load table texture:', err);
           
-
-          console.log('🪑 Applied fallback brown material');
         });
-        
-        console.log('🪑 Table found and moved back');
       }
 
           // DESK MODE OBJECTS
@@ -2961,7 +2859,6 @@ function loadScene() {
           
           if (deskObjectNames.includes(child.name)) {
             deskParts.push(child);
-            console.log('Desk object found:', child.name);
           }
           
           // FRAME MODE OBJECTS
@@ -2982,7 +2879,6 @@ function loadScene() {
             
             frameParts.push(child);
             deskParts.push(child); 
-            console.log('Frame found:', child.name);
           }
 if (child.name && (child.name.startsWith('board') || child.name.startsWith('block-'))) {
   boardParts.push(child);
@@ -3012,8 +2908,6 @@ if (child.name && (child.name.startsWith('board') || child.name.startsWith('bloc
       mesh: child
     };
   }
-  
-console.log('📋 Board object found:', child.name);
 }
 
 // TV MODE OBJECTS
@@ -3030,7 +2924,6 @@ if (child.name === 'tv_screen') {
   const width = bbox.max.x - bbox.min.x;
   const height = bbox.max.y - bbox.min.y;
   
-  console.log('📺 TV screen size:', width, 'x', height);
   
   // Store original transform BEFORE replacing geometry
   const originalPosition = child.position.clone();
@@ -3065,24 +2958,18 @@ if (child.name === 'tv_screen') {
   child.castShadow = false;
   child.receiveShadow = false;
   
-  console.log('📺 TV screen geometry replaced');
-  console.log('  - Material type:', child.material.type);
-  console.log('  - New geometry:', child.geometry.type);
 }
   
-  console.log('📺 TV object found:', child.name);
 }
 
 // SHELF MODE OBJECTS
 if (child.name === "shelf") {
   shelfParts.push(child);
-  console.log('📚 Shelf found:', child.name);
 }
 
 // RADIO MODE OBJECT
 if (child.name === "radio") {
   radioParts.push(child);
-  console.log('📻 Radio found:', child.name);
 }
 
 if (chessPieceNames.includes(child.name)) {
@@ -3124,7 +3011,6 @@ if (chessBoard) {
 // Ensure screen has original scale saved
 if (screenMesh && !screenMesh.userData.originalScale) {
   screenMesh.userData.originalScale = screenMesh.scale.clone();
-  console.log('✅ Screen original scale saved:', screenMesh.userData.originalScale);
 }
 
 laptopParts.forEach((part) => {
@@ -3285,7 +3171,6 @@ tvParts.forEach((part) => {
     outlineMesh.userData.targetOpacity = 0;
     outlineMesh.userData.currentOpacity = 0;
     
-    console.log('📺 TV screen outline created - 15% larger, DoubleSide, behind screen');
   } else {
     // NORMAL OUTLINE for other TV objects
     const outlineGeo = part.geometry.clone();
@@ -3413,9 +3298,6 @@ if (chessBoard) {
   outlineMesh.userData.targetOpacity = 0;
   outlineMesh.userData.currentOpacity = 0;
   
-  console.log('♟️ Chess outline created - full board size');
-  console.log('Chess board scale:', chessBoard.scale);
-  console.log('Outline mesh scale:', outlineMesh.scale);
 }
       
       // Mark GLB as loaded
@@ -3444,36 +3326,29 @@ if (chessBoard) {
         
         laptopScreen = new LaptopScreen(screenMesh, THREE, renderer);
         laptopScreen.setCamera(camera);
-        console.log("💻 Laptop screen initialized");
       }
 
       if (typeof ChessGame !== 'undefined') {
         chessGame = new ChessGame();
         window.chessGame = chessGame;
-        console.log("♟️ Chess game initialized");
       }
       
       if (typeof ChessInteractions !== 'undefined') {
         chessInteractions = new ChessInteractions(
           scene, camera, raycaster, mouse, pieceObjects, squareMarkers, chessBoard, chessPieceNames
         );
-        console.log("♟️ Chess interactions initialized");
       }
       
       if (typeof ChessAnimations !== 'undefined') {
         chessAnimations = new ChessAnimations(chessBoard, pieceObjects, squareMarkers, THREE);
-        console.log("♟️ Chess animations initialized");
       }
       
       // Initialize TV screen
 if (tvScreenMesh && typeof TVScreen !== 'undefined') {
   tvScreen = new TVScreen(tvScreenMesh, THREE, renderer);
-  console.log("📺 TV screen initialized");
-  console.log("TV screen mesh:", tvScreenMesh.name);
-  console.log("TV screen material:", tvScreenMesh.material);
 } else {
-  if (!tvScreenMesh) console.error("❌ TV screen mesh not found in scene!");
-  if (typeof TVScreen === 'undefined') console.error("❌ TVScreen class not loaded!");
+  if (!tvScreenMesh) console.error("TV screen mesh not found in scene!");
+  if (typeof TVScreen === 'undefined') console.error("TVScreen class not loaded!");
 }
     },
     undefined,
@@ -3565,14 +3440,7 @@ else if (currentMode === 'shelf') {
   
   const hits = raycaster.intersectObjects(selectable, true);
   
-  // DEBUG: Log what we're hitting
-  if (hits.length > 0) {
-    console.log('🎯 Hovering over:', hits[0].object.name);
-  }
-  
-  // Check if hovering over radio - check the object itself AND its parent
   const hoveringRadio = hits.some(h => {
-    // Check if the object itself is a radio part
     if (radioParts.includes(h.object)) return true;
     
     // Check if the parent is a radio part
@@ -3584,9 +3452,6 @@ else if (currentMode === 'shelf') {
     return false;
   });
   
-  if (hoveringRadio) {
-    console.log('📻 HOVERING OVER RADIO - Showing outline!');
-  }
   
 radioOutlineMeshes.forEach(item => {
     item.mesh.visible = true;
@@ -3624,8 +3489,8 @@ function onPointerClick(event) {
   if (isCameraAnimating || normalModeInteractionBlocked || isResetting || isAnimating) return;
   
   updateCameraDebug();
-  console.log('Camera Position:', camera.position);
-  console.log('Camera Target:', controls.target);
+  //console.log('Camera Position:', camera.position);
+  //console.log('Camera Target:', controls.target);
   
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -3640,7 +3505,6 @@ function onPointerClick(event) {
   // Chess mode - handle chess interactions
 if (currentMode === 'chess' && gameStarted && chessInteractions) {
   if (isProcessingMove || isAnimating || isResetting || chessGame.aiThinking) {
-    console.log('⏸️ Click blocked - move in progress');
     return;
   }
   chessInteractions.handleClick(chessGame, makePlayerMove);
@@ -3648,9 +3512,6 @@ if (currentMode === 'chess' && gameStarted && chessInteractions) {
 }
   const hits = raycaster.intersectObjects(selectable, true);
   
-  if (hits.length > 0) {
-    console.log('CLICKED OBJECT:', hits[0].object.name);
-  }
   
 // Normal mode - can click sofa, desk, or board objects
 if (currentMode === 'normal') {
@@ -3661,19 +3522,14 @@ if (currentMode === 'normal') {
   const clickedShelf = hits.find(h => shelfParts.includes(h.object));
   
   if (clickedSofa) {
-    console.log('Entering SOFA mode');
     enterSofaMode();
   } else if (clickedDesk) {
-    console.log('Entering DESK mode');
     enterDeskMode();
   } else if (clickedBoard) {
-    console.log('Entering BOARD mode');
     enterBoardMode();
   } else if (clickedTV) {
-    console.log('Entering TV mode');
     enterTVMode();
   } else if (clickedShelf) {
-    console.log('Entering SHELF mode');
     enterShelfMode();
   }
 }
@@ -3692,10 +3548,8 @@ if (currentMode === 'normal') {
     const clickedFamily = hits.find(h => familyFrameParts.includes(h.object));
     
     if (clickedChess) {
-      console.log('Entering CHESS mode from sofa');
       enterChessMode();
     } else if (clickedFamily) {
-      console.log('Entering FAMILY mode from sofa');
       enterFamilyMode();
     }
   }
@@ -3705,7 +3559,6 @@ else if (currentMode === 'shelf') {
   const clickedRadio = hits.find(h => radioParts.includes(h.object));
   
   if (clickedRadio) {
-    console.log('Entering RADIO mode from shelf');
     showRadioPanel();
     radioOutlineMeshes.forEach(item => (item.mesh.visible = false));
   }
@@ -3717,10 +3570,8 @@ else if (currentMode === 'shelf') {
     const clickedFrame = hits.find(h => frameParts.includes(h.object));
     
     if (clickedLaptop) {
-      console.log('Entering LAPTOP mode from desk');
       enterLaptopMode();
     } else if (clickedFrame) {
-      console.log('Entering FRAME mode from desk');
       enterFrameMode();
     }
   }
@@ -3760,7 +3611,6 @@ function enterLaptopMode() {
     showModeDialogue('laptop');
   }, 2500);
   
-  console.log("Entered laptop mode");
 }
 
 function enterSofaMode() {
@@ -3788,7 +3638,6 @@ function enterSofaMode() {
     showModeDialogue('sofa');
   }, 2500);
   
-  console.log("🛋️ Entered sofa mode");
 }
 
 function enterChessMode() {
@@ -3816,7 +3665,6 @@ function enterChessMode() {
     showModeDialogue('chess');
   }, 2500);
   
-  console.log("♟️ Entered chess mode");
 }
 
 function enterFamilyMode() {
@@ -3842,8 +3690,6 @@ function enterFamilyMode() {
   setTimeout(() => {
     showModeDialogue('family');
   }, 2500);
-  
-  console.log("🖼️ Entered family mode");
 }
 
 function enterDeskMode() {
@@ -3870,8 +3716,6 @@ function enterDeskMode() {
   setTimeout(() => {
     showModeDialogue('desk');
   }, 2500);
-  
-  console.log("Entered desk mode");
 }
 
 function enterFrameMode() {
@@ -3897,7 +3741,6 @@ function enterFrameMode() {
   setTimeout(() => {
     showModeDialogue('frame');
   }, 2500);
-  console.log("Entered frame mode");
 }
 
 function enterBoardMode() {
@@ -3924,8 +3767,6 @@ function enterBoardMode() {
    setTimeout(() => {
     showCertificateBoard();
   }, 3500);
-  
-  console.log("📋 Entered board mode");
 }
 
 function enterTVMode() {
@@ -3957,17 +3798,15 @@ function enterTVMode() {
 function makePlayerMove(from, to) {
   // CRITICAL: Block if ANY operation is in progress
   if (isResetting || isAnimating || isProcessingMove) {
-    console.log('⏸️ Move blocked - operation in progress');
     return;
   }
   
   isProcessingMove = true; // Lock ALL interactions
   isAnimating = true;
   
-  // CRITICAL FIX: Check if this is a promotion move WITHOUT calling makeMove yet
   const piece = chessGame.getPieceAt(from);
   if (!piece) {
-    console.error(`❌ No piece at ${from} to move!`);
+    console.error(`No piece at ${from} to move!`);
     isProcessingMove = false;
     isAnimating = false;
     return;
@@ -3985,12 +3824,10 @@ function makePlayerMove(from, to) {
   
   // If promotion needed, handle capture FIRST, then animate, then show UI
   if (needsPromotion) {
-    console.log(`🎯 Promotion detected! Animating to ${to} first...`);
     
     // Check for capture
     const capturedPieceName = chessGame.squareToPieceName[to];
     if (capturedPieceName) {
-      console.log(`🎯 Capturing ${capturedPieceName} during promotion`);
       chessAnimations.fadeOutPiece(capturedPieceName);
     }
     
@@ -4036,7 +3873,7 @@ function makePlayerMove(from, to) {
   // NORMAL (non-promotion) move - proceed as usual
   const moveData = chessGame.makeMove(from, to);
   if (!moveData) {
-    console.error('❌ makeMove returned null');
+    console.error('makeMove returned null');
     isProcessingMove = false;
     isAnimating = false;
     return;
@@ -4137,7 +3974,6 @@ async function makeAIMove() {
               updateChessUI();
               isAnimating = false;
               isProcessingMove = false; // UNLOCK - AI move complete
-              console.log('✅ AI move complete - interactions restored');
             }
           });
         }
@@ -4179,18 +4015,15 @@ function animate() {
     controls.enabled = false;
     lockedCameraPos.copy(camera.position);
     lockedCameraTarget.copy(controls.target);
-    console.log("💻 Laptop mode activated - camera locked at:", lockedCameraPos);
   } else if (currentMode === 'desk') {
     controls.enabled = false;
     lockedCameraPos.copy(camera.position);
     lockedCameraTarget.copy(controls.target);
     hoverEnabled = true;
-    console.log("🖥️ Desk mode activated - camera locked at:", lockedCameraPos);
   } else if (currentMode === 'frame') {
     controls.enabled = false;
     lockedCameraPos.copy(camera.position);
     lockedCameraTarget.copy(controls.target);
-    console.log("🖼️ Frame mode activated - camera locked at:", lockedCameraPos);
   } else if (currentMode === 'chess') {
     lockedCameraPos.copy(camera.position);
     lockedCameraTarget.copy(controls.target);
@@ -4203,24 +4036,20 @@ function animate() {
     if (gameStarted) {
       document.getElementById('chessStatus').classList.add('active');
       document.getElementById('chessControls').classList.add('active');
-      console.log("♟️ Chess mode resumed at:", lockedCameraPos);
     } else {
       const welcomeScreen = document.getElementById('chessWelcome');
       welcomeScreen.style.display = 'block';
       welcomeScreen.classList.add('active');
-      console.log("♟️ Chess mode activated at:", lockedCameraPos);
     }
       } else if (currentMode === 'sofa') {
         controls.enabled = false;
         lockedCameraPos.copy(camera.position);
         lockedCameraTarget.copy(controls.target);
         hoverEnabled = true;
-        console.log("🛋️ Sofa mode activated - camera locked at:", lockedCameraPos);
       } else if (currentMode === 'family') {
         controls.enabled = false;
         lockedCameraPos.copy(camera.position);
         lockedCameraTarget.copy(controls.target);
-        console.log("🖼️ Family mode activated - camera locked at:", lockedCameraPos);
      } else if (currentMode === 'board') {
         controls.enabled = false;
         lockedCameraPos.copy(camera.position);
@@ -4250,17 +4079,14 @@ function animate() {
           window.showMobileControls('menu');
         }
         
-        console.log("📺 TV mode activated - camera locked, console OS ready");
       } else if (currentMode === 'shelf') {
       controls.enabled = false;
       lockedCameraPos.copy(camera.position);
       lockedCameraTarget.copy(controls.target);
       hoverEnabled = true;
-      console.log("📚 Shelf mode activated - camera locked at position 0");
       }else if (currentMode === 'normal') {
         controls.enabled = true;
         hoverEnabled = true;
-        console.log("🔄 Returned to normal mode");
       }
     }
   }

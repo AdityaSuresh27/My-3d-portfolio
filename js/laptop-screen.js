@@ -741,7 +741,6 @@ fallbackCopyToClipboard(text) {
   textArea.select();
   try {
     document.execCommand('copy');
-    console.log('Copied to clipboard (fallback):', text);
   } catch (err) {
     console.error('Fallback copy failed:', err);
   }
@@ -1653,7 +1652,6 @@ const lines = [
 activate() {
 this.isActive = true;
 this.needsRedraw = true;
-console.log('Laptop screen activated');
 window.addEventListener('mousemove', this.onMouseMove, true);
 window.addEventListener('mousedown', this.onMouseDown, true);
 window.addEventListener('mouseup', this.onMouseUp, true);
