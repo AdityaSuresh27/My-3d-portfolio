@@ -235,18 +235,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
 function registerAllAssets() {
   
-  // 1. Main GLB scene file
-  window.assetLoader.addAsset();
+  window.assetLoader.addAsset(); 
   
-  // 2. Table texture (loaded separately in loadScene)
-  window.assetLoader.addAsset();
-  
+  window.assetLoader.addAsset(); 
   const chessModelPath = './assets/models/chess_model.onnx';
   fetch(chessModelPath, { method: 'HEAD' })
     .then(() => {
       window.assetLoader.addAsset();
     })
     .catch(() => {
+      console.log('Chess AI model not found - chess will work without AI');
     });
   
 }
@@ -1086,23 +1084,24 @@ function hideCertificateBoard() {
 }
 
 function playBoardAudio(audioFile) {
-  // Stop any existing audio
   if (boardAudio) {
     boardAudio.pause();
     boardAudio.currentTime = 0;
   }
   
-  // Create and play new audio
   boardAudio = new Audio(audioFile);
   boardAudio.volume = 0.5; 
   
+  boardAudio.addEventListener('error', (e) => {
+    console.log('Board audio not available:', audioFile);
+  });
+  
   boardAudio.play().catch(err => {
-    console.warn('Audio playback failed:', err);
+    console.log('Audio playback not available');
   });
 }
 
 function setupRadioPanel() {
-  // Create backdrop overlay
   const radioBackdrop = document.createElement('div');
   radioBackdrop.id = 'radioBackdrop';
   radioBackdrop.style.cssText = `
@@ -3596,10 +3595,6 @@ function enterLaptopMode() {
   }
   
   showExitButton();
-  
-  setTimeout(() => {
-    if (laptopHint) laptopHint.classList.add('active');
-  }, 1000);
   
   animateCameraTo(
     -4.0128, 1.1213, 1.0702,
