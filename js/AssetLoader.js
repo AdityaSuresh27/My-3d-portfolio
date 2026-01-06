@@ -63,5 +63,4 @@ class AssetLoader {
   }
 }
 
-// Create global instance
 window.assetLoader = new AssetLoader();
