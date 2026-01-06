@@ -71,7 +71,6 @@ Classic arcade games rendered on a 3D TV screen:
 - https://www.fab.com/listings/983daf7b-5edd-4d7e-b5a3-d4f06deaffa9
 - https://www.freepik.com/free-photo/full-shot-family-members-silhouettes-outdoors_36029194.htm#fromView=image_search&page=1&position=0&uuid=1ca7f716-6a3e-4495-82de-84e6f6926be0&query=Happy+family+silhouette+on+sunset
 - https://unsplash.com/photos/white-cloud-sky-lNxMcE8mvIM
-- 
 
 ### Audio
 - https://pixabay.com/music/acoustic-group-my-life-main-6670/
@@ -83,14 +82,6 @@ Classic arcade games rendered on a 3D TV screen:
 - https://pixabay.com/sound-effects/ficha-de-ajedrez-34722/
 - https://pixabay.com/sound-effects/computer-mouse-click-352734/
 - https://pixabay.com/sound-effects/ui-correct-button2-103167/
-
----
-
-## 🔗 Links
-
-- **Live Demo**: [your-portfolio-url.com](https://your-portfolio-url.com)
-- **LinkedIn**: [Your Profile](https://linkedin.com/in/yourprofile)
-- **GitHub**: [@yourusername](https://github.com/yourusername)
 
 ---
 
