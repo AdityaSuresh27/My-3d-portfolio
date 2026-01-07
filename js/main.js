@@ -37,6 +37,9 @@ let shelfScrollPosition = 0; // 0 to 4 (for 5 positions)
 let shelfOutlineOffsetX = 0;
 let shelfOutlineOffsetY = 0;
 let shelfScrolling = false;
+let shelfTouchStartY = 0;
+let shelfTouchCurrentY = 0;
+let shelfIsSwiping = false;
 
 // Radio mode variables
 let radioParts = [];
@@ -303,6 +306,9 @@ function init() {
   window.addEventListener("pointerdown", onPointerClick);
   window.addEventListener("wheel", onMouseWheel, { passive: false });
   window.addEventListener("keydown", onKeyDown);
+  window.addEventListener("touchstart", onTouchStart, { passive: false });
+  window.addEventListener("touchmove", onTouchMove, { passive: false });
+  window.addEventListener("touchend", onTouchEnd, { passive: false });
 
   setupChessUI();
   setupDialogueSystem();
@@ -1947,9 +1953,8 @@ function onMouseWheel(event) {
   
   event.preventDefault();
   
-  const delta = Math.sign(event.deltaY); // -1 for up, 1 for down
+  const delta = Math.sign(event.deltaY); 
   
-  // Move target position smoothly by small increments
   targetShelfPosition += delta * 0.1; // Smooth incremental movement
   targetShelfPosition = Math.max(0, Math.min(4, targetShelfPosition)); // Clamp to bounds
 }
@@ -1966,6 +1971,46 @@ function onKeyDown(event) {
     targetShelfPosition = Math.max(0, Math.min(4, targetShelfPosition));
   }
 }
+
+function onTouchStart(event) {
+  if (currentMode !== 'shelf') return;
+  
+  shelfTouchStartY = event.touches[0].clientY;
+  shelfTouchCurrentY = shelfTouchStartY;
+  shelfIsSwiping = true;
+}
+
+function onTouchMove(event) {
+  if (currentMode !== 'shelf' || !shelfIsSwiping) return;
+  
+  event.preventDefault();
+  
+  shelfTouchCurrentY = event.touches[0].clientY;
+  const deltaY = shelfTouchStartY - shelfTouchCurrentY;
+  const scrollAmount = deltaY / 1000;
+  
+  targetShelfPosition = currentShelfPosition + scrollAmount;
+  targetShelfPosition = Math.max(0, Math.min(4, targetShelfPosition));
+}
+
+function onTouchEnd(event) {
+  if (currentMode !== 'shelf' || !shelfIsSwiping) return;
+  
+  shelfIsSwiping = false;
+  
+  const totalDelta = shelfTouchStartY - shelfTouchCurrentY;
+  
+  if (Math.abs(totalDelta) > 50) { 
+    if (totalDelta > 0) {
+      targetShelfPosition = Math.min(4, Math.ceil(currentShelfPosition));
+    } else {
+      targetShelfPosition = Math.max(0, Math.floor(currentShelfPosition));
+    }
+  } else {
+    targetShelfPosition = Math.round(currentShelfPosition);
+  }
+}
+
 
 function updateShelfCamera() {
   if (currentMode !== 'shelf') return;
