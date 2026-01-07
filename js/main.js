@@ -1671,7 +1671,6 @@ function exitChessMode() {
     marker.visible = false;
   });
   
-  // Hide chess UI
   document.getElementById('chessStatus').classList.remove('active');
   document.getElementById('chessControls').classList.remove('active');
   document.getElementById('chessWelcome').classList.remove('active');
@@ -1684,7 +1683,7 @@ function exitChessMode() {
   hoverEnabled = true;
   isUserInteracting = false;
   
-  controls.enabled = false; // Keep locked in sofa mode
+  controls.enabled = false; 
   controls.enablePan = false;
   controls.enableZoom = false;
   
@@ -1836,10 +1835,8 @@ function exitBoardMode() {
 }
 
 function exitTVMode() {
-  // Hide dialogue IMMEDIATELY
   hideModeDialogue();
   
-  // CRITICAL: Store current game state BEFORE deactivating
   if (tvScreen && tvScreen.currentGame) {
     tvScreen.wasInGame = true;
     tvScreen.savedGameState = tvScreen.currentGame;
@@ -1852,7 +1849,6 @@ function exitTVMode() {
     tvScreen.deactivate();
   }
   
-  // CRITICAL: Hide ALL TV-related UI elements
   if (tvScreen && tvScreen.gameMenuBtn) {
     tvScreen.gameMenuBtn.style.display = 'none';
   }
@@ -1862,7 +1858,6 @@ function exitTVMode() {
     window.hideMobileControls();
   }
   
-  // Hide retry button if it exists
   const retryBtn = document.getElementById('btnRetry');
   if (retryBtn) {
     retryBtn.style.display = 'none';

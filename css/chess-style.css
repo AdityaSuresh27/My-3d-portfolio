@@ -689,8 +689,7 @@ canvas {
   }
   
   #chessStatus {
-    min-width: 140px;
-    padding: 1rem 1.25rem;
+    display: none !important;
   }
   
   #chessControls {
