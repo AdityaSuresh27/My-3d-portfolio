@@ -149,7 +149,7 @@ let hasSeenIntroDialogue = false;
 let normalModeInteractionBlocked = false;
 
 const introDialogues = [
-  "Welcome to my interactive 3D portfolio. I designed this space to reflect what a comfortable room feels like to me, a place where you can explore and get to know me",
+  "Welcome to my interactive 3D portfolio. I designed this space to feel like a comfortable room where you can explore and get to know me. If you are on a phone please keep your device in landscape mode",
   "To explore my technical skills, click on the laptop on the desk under the window",
   "To view my certifications, click on the board at the back, to the left of the window",
   "Every section has its own story to tell, so please do check out everything in the room and thank you"
@@ -1587,7 +1587,25 @@ function hideExitButton() {
 }
 
 function exitCurrentMode() {
-  // Update background music for mode change
+  // SPECIAL CASE: Chess mode with game over screen active
+  if (currentMode === 'chess' && chessGame && chessGame.gameOver) {
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    if (gameOverScreen) {
+      gameOverScreen.classList.remove('show');
+    }
+    
+    resetChessGame();
+    
+    setTimeout(() => {
+      actualExitCurrentMode();
+    }, 300);
+    return;
+  }
+  
+  actualExitCurrentMode();
+}
+
+function actualExitCurrentMode() {
   if (window.audioManager) {
     window.audioManager.updateForMode('normal');
   }
