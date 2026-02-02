@@ -49,8 +49,13 @@ constructor() {
     liquidCanvas.id = 'liquidCanvas';
     liquidCanvas.width = 350;
     liquidCanvas.height = 350;
-    
+
+    const loadingText = document.createElement('div');
+    loadingText.className = 'loading-text';
+    loadingText.textContent = 'Loading, please wait...';
+
     container.appendChild(liquidCanvas);
+    container.appendChild(loadingText);
     loadingScreen.appendChild(overlay);
     loadingScreen.appendChild(starsCanvas);
     loadingScreen.appendChild(container);

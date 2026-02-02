@@ -68,3 +68,36 @@
 .transition-overlay.active {
   opacity: 1;
 }
+.loading-text {
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  font-size: 20px;
+  color: rgba(0, 0, 0, 0.85);
+  letter-spacing: 2px;
+  animation: loadingTextPulse 2s ease-in-out infinite;
+  user-select: none;
+  pointer-events: none;
+  z-index: 200;
+}
+
+@keyframes loadingTextPulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .loading-text {
+    font-size: 14px;
+    bottom: 20px;
+    letter-spacing: 1.5px;
+  }
+}

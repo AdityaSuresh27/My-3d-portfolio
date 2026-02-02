@@ -193,7 +193,7 @@ let certificateBoardVisible = false;
 
 const dialogueContent = {
   sofa: "A comfy corner to sit down with a friend",
-  chess: "This chess AI was built using an ML neural network model. Limited computational power (aka a potato PC) held it back in training, so while it plays legal moves, its strategy is… questionable",
+  chess: "This chess AI was built using an ML neural network model. Limited computational power (aka a potato PC) held it back in training, so while it plays legal moves, its strategy is… questionable. Click on any piece to begin",
   family: "I sincerely thank my family, who helped and encouraged me throughout my life and made it possible for me to reach where I am today",
   desk: "A calm place to sit and work, facing the window, ready to start with a cup of coffee",
   laptop: "Welcome to my portfolio. You can check out my projects, skills, learn more about me, and find my contact details and GitHub work here",
