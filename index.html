@@ -8,11 +8,9 @@
     <link rel="icon" href="data:," />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My 3D Portfolio</title>
-    <link rel="stylesheet" href="./css/style.css" />
-    <link rel="stylesheet" href="./css/chess-style.css" />
-    <link rel="stylesheet" href="./css/laptop-mode.css" />
-    <link rel="stylesheet" href="css/audio-panel.css">
-    <link rel="stylesheet" href="./css/loading-screen.css" />
+    <link rel="stylesheet" href="./css/bundle.css" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="preload" href="./assets/models/scene.glb" as="fetch" crossorigin />
   </head>
   <body>
 
@@ -86,9 +84,6 @@
     <script src="./js/AssetLoader.js"></script>
     <script src="./js/LoadingScreen.js"></script>
 
-    <!-- ONNX Runtime (Self-Hosted) -->
-    <script src="./libs/ort.min.js"></script>
-
     <!-- html2canvas (Self-Hosted) -->
     <script src="./libs/html2canvas.min.js"></script>
 
@@ -106,7 +101,6 @@
     
     <!-- Load modules -->
     <script src="./js/chess-logic.js"></script>
-    <script src="./js/chess-ai-browser.js"></script>
     <script src="./js/chess-animations.js"></script>
     <script src="./js/chess-interactions.js"></script>
     <script src="./js/tv-screen.js"></script>

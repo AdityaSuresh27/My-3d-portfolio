@@ -215,41 +215,22 @@ window.addEventListener('DOMContentLoaded', () => {
   
   // Small delay to ensure loading screen canvas is ready
   setTimeout(() => {
-    // Initialize Three.js scene (but don't load assets yet)
     init();
     
-    // Initialize audio manager
     if (typeof AudioManager !== 'undefined') {
       window.audioManager = new AudioManager();
       window.audioManager.init();
     }
     
-    // Start animation loop (won't show scene until loaded)
     animate();
-    
-    // Register all assets BEFORE loading starts
     registerAllAssets();
-
-    setTimeout(() => {
-      loadScene();
-    }, 100);
-  }, 200);
+    loadScene(); // Start immediately, no extra 100ms delay
+  }, 50); // Reduced from 200ms
 });
 
 function registerAllAssets() {
-  
-  window.assetLoader.addAsset(); 
-  
-  window.assetLoader.addAsset(); 
-  const chessModelPath = './assets/models/chess_model.onnx';
-  fetch(chessModelPath, { method: 'HEAD' })
-    .then(() => {
-      window.assetLoader.addAsset();
-    })
-    .catch(() => {
-      console.log('Chess AI model not found - chess will work without AI');
-    });
-  
+  window.assetLoader.addAsset(); // GLB scene
+  window.assetLoader.addAsset(); // texture
 }
 
 function init() {
@@ -2147,8 +2128,44 @@ function setupChessUI() {
     loadingText.style.display = 'block';
     
     if (!chessAI) {
-      chessAI = new ChessAIBrowser();
-      await chessAI.load();
+      try {
+        // Lazy load ONNX runtime first, then chess AI
+        if (typeof ort === 'undefined') {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = './libs/ort.min.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
+        }
+
+        if (typeof window.ChessAIBrowser === 'undefined') {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = './js/chess-ai-browser.js';
+            script.onload = () => {
+              // Small tick to ensure script fully executes and sets window.ChessAIBrowser
+              setTimeout(resolve, 0);
+            };
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
+        }
+
+        if (typeof window.ChessAIBrowser === 'undefined') {
+          throw new Error('ChessAIBrowser failed to load');
+        }
+
+        chessAI = new window.ChessAIBrowser();
+        await chessAI.load();
+      } catch (err) {
+        console.error('Chess AI load failed:', err);
+        loadingText.style.display = 'none';
+        btn.disabled = false;
+        btn.textContent = '⚠ Retry';
+        return;
+      }
     }
     
     loadingText.style.display = 'none';
