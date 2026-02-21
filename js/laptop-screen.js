@@ -808,7 +808,6 @@ if (name === 'fileManager') {
       if (contact.isEmail) {
         // Copy email to clipboard
         this.copyToClipboard(contact.url);
-        // Show a brief message (optional)
         this.showPermissionMessage = true;
         this.permissionMessageTimer = Date.now();
         this.permissionMessageText = '📋 Email Copied!';

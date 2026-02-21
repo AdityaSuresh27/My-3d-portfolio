@@ -2744,6 +2744,7 @@ function onWindowResize() {
 }
 
 function loadScene() {
+  new THREE.TextureLoader().load('./assets/icons/texture.jpg'); // warm cache
   const loader = new GLTFLoader();
   
   loader.load(
@@ -2886,39 +2887,23 @@ function loadScene() {
         sofaParts.push(child);
         child.position.x += 0.02; 
         
-        // Load and apply texture
-        const textureLoader = new THREE.TextureLoader();
-        textureLoader.load('./assets/icons/texture.jpg', (texture) => {
-
-          // Mark texture as loaded
+        const tex = new THREE.TextureLoader().load('./assets/icons/texture.jpg', (texture) => {
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.repeat.set(2, 2);
+          texture.colorSpace = THREE.SRGBColorSpace;
+          texture.needsUpdate = true;
+          child.material = new THREE.MeshStandardMaterial({
+            map: texture,
+            color: 0xffffff,
+            metalness: 0.1,
+            roughness: 0.9,
+            side: THREE.DoubleSide
+          });
+          child.material.needsUpdate = true;
           if (window.assetLoader) {
             window.assetLoader.assetLoaded();
           }
-          
-          texture.wrapS = THREE.RepeatWrapping;
-          texture.wrapT = THREE.RepeatWrapping;
-          texture.repeat.set(2, 2); // Increase to see pattern more clearly
-          texture.colorSpace = THREE.SRGBColorSpace; // Ensure correct color space
-          texture.needsUpdate = true;
-          
-          // COMPLETELY REPLACE material (don't clone corrupted one)
-          child.material = new THREE.MeshStandardMaterial({
-            map: texture,
-            color: 0xffffff, // White multiplier (doesn't change texture color)
-            metalness: 0.1,   // Less metallic to see texture better
-            roughness: 0.9,   // More rough for better texture visibility
-            side: THREE.DoubleSide
-          });
-          
-          child.material.needsUpdate = true;
-        
-        }, 
-        (progress) => {
-          console.log('📥 Loading texture:', (progress.loaded / progress.total * 100).toFixed(0) + '%');
-        },
-        (err) => {
-          console.error('Failed to load table texture:', err);
-          
         });
       }
 
