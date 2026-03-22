@@ -185,6 +185,12 @@ const certificates = [
     issuer: "Edunet",
     description: "Organized and conducted a hackathon using Webots for robotics simulation",
     link: "https://www.linkedin.com/feed/update/urn:li:activity:7413285080808214528/"
+  },
+  {
+    title: "Mastering Flutter",
+    issuer: "Infosys",
+    description: "Completed and passed the course for mobile app development via Flutter",
+    link: "https://www.linkedin.com/posts/aditya-suresh-26b457298_flutter-mobileappdevelopment-crossplatform-share-7441405744379224064-P4pH?utm_source=share&utm_medium=member_android&rcm=ACoAAEf4NbMBA_gbu08UFg_9KUxb9KDA3d2NCt4"
   }
 ];
 
