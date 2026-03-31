@@ -302,6 +302,8 @@ function init() {
   setupCertificateBoard();
   setupRadioPanel();
   setupCameraToggle();
+  setupDashboardButtons();
+  toggleDashboardButtons(); // Initialize visibility for normal mode
   setupMobileControls();
 }
 
@@ -408,6 +410,38 @@ function setupCameraToggle() {
     }
   });
 
+}
+
+function setupDashboardButtons() {
+  const dashboardButtons = document.getElementById('dashboardButtons');
+  const professionalDashboardBtn = document.getElementById('professionalDashboardBtn');
+  const certificationsBtn = document.getElementById('certificationsBtn');
+  
+  if (!professionalDashboardBtn || !certificationsBtn) return;
+  
+  // Show buttons in normal mode
+  professionalDashboardBtn.addEventListener('click', () => {
+    if (currentMode === 'normal' && !isCameraAnimating) {
+      enterLaptopMode();
+    }
+  });
+  
+  certificationsBtn.addEventListener('click', () => {
+    if (currentMode === 'normal' && !isCameraAnimating) {
+      enterBoardMode();
+    }
+  });
+}
+
+function toggleDashboardButtons() {
+  const dashboardButtons = document.getElementById('dashboardButtons');
+  if (!dashboardButtons) return;
+  
+  if (currentMode === 'normal') {
+    dashboardButtons.classList.add('active');
+  } else {
+    dashboardButtons.classList.remove('active');
+  }
 }
 
 function setupMobileControls() {
@@ -1727,6 +1761,7 @@ function exitSofaMode() {
   
   // Return to normal mode
   currentMode = 'normal';
+  toggleDashboardButtons();
   previousMode = null;
   hoverEnabled = true;
   isUserInteracting = false;
@@ -1753,6 +1788,7 @@ function exitDeskMode() {
   
   // Return to normal mode
   currentMode = 'normal';
+  toggleDashboardButtons();
   previousMode = null;
   hoverEnabled = true;
   isUserInteracting = false;
@@ -1816,6 +1852,7 @@ function exitBoardMode() {
     setTimeout(() => {
       // Return to normal mode
       currentMode = 'normal';
+      toggleDashboardButtons();
       previousMode = null;
       hoverEnabled = false;
       isUserInteracting = false;
@@ -1870,6 +1907,7 @@ function exitTVMode() {
   
   // Return to normal mode
   currentMode = 'normal';
+  toggleDashboardButtons();
   previousMode = null;
   hoverEnabled = true;
   isUserInteracting = false;
@@ -1892,6 +1930,7 @@ function exitTVMode() {
 
 function enterShelfMode() {
   currentMode = 'shelf';
+  toggleDashboardButtons();
   const cameraToggle = document.getElementById('cameraToggle');
   if (cameraToggle) cameraToggle.classList.remove('active');
   previousMode = 'normal';
@@ -1928,6 +1967,7 @@ function exitShelfMode() {
   
   // Return to normal mode
   currentMode = 'normal';
+  toggleDashboardButtons();
   previousMode = null;
   hoverEnabled = true;
   isUserInteracting = false;
@@ -3647,6 +3687,7 @@ function enterLaptopMode() {
   const fromDesk = (currentMode === 'desk');
   
   currentMode = 'laptop';
+  toggleDashboardButtons();
   const cameraToggle = document.getElementById('cameraToggle');
   if (cameraToggle) cameraToggle.classList.remove('active');
   previousMode = fromDesk ? 'desk' : 'normal';
@@ -3676,6 +3717,7 @@ function enterLaptopMode() {
 
 function enterSofaMode() {
   currentMode = 'sofa';
+  toggleDashboardButtons();
   const cameraToggle = document.getElementById('cameraToggle');
   if (cameraToggle) cameraToggle.classList.remove('active');
   previousMode = 'normal';
@@ -3706,6 +3748,7 @@ function enterChessMode() {
   hideModeDialogue();
   
   currentMode = 'chess';
+  toggleDashboardButtons();
   previousMode = 'sofa';
   hoverEnabled = false;
   chessOutlineMeshes.forEach(o => (o.visible = false));
@@ -3733,6 +3776,7 @@ function enterFamilyMode() {
   hideModeDialogue();
   
   currentMode = 'family';
+  toggleDashboardButtons();
   previousMode = 'sofa';
   hoverEnabled = false;
   familyOutlineMeshes.forEach(item => (item.mesh.visible = false));
@@ -3755,6 +3799,7 @@ function enterFamilyMode() {
 
 function enterDeskMode() {
   currentMode = 'desk';
+  toggleDashboardButtons();
   const cameraToggle = document.getElementById('cameraToggle');
   if (cameraToggle) cameraToggle.classList.remove('active');
   previousMode = 'normal';
@@ -3784,6 +3829,7 @@ function enterFrameMode() {
   hideModeDialogue();
   
   currentMode = 'frame';
+  toggleDashboardButtons();
   previousMode = 'desk';
   hoverEnabled = false;
   frameOutlineMeshes.forEach(item => (item.mesh.visible = false));
@@ -3806,6 +3852,7 @@ function enterFrameMode() {
 
 function enterBoardMode() {
   currentMode = 'board';
+  toggleDashboardButtons();
   const cameraToggle = document.getElementById('cameraToggle');
   if (cameraToggle) cameraToggle.classList.remove('active');
   previousMode = 'normal';
@@ -3832,6 +3879,7 @@ function enterBoardMode() {
 
 function enterTVMode() {
   currentMode = 'tv';
+  toggleDashboardButtons();
   const cameraToggle = document.getElementById('cameraToggle');
   if (cameraToggle) cameraToggle.classList.remove('active');
   previousMode = 'normal';
