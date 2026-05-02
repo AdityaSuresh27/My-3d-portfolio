@@ -150,20 +150,20 @@ let normalModeInteractionBlocked = false;
 
 const introDialogues = [
   "Welcome to my interactive 3D portfolio. I designed this space to feel like a comfortable room where you can explore and get to know me. If you are on a phone please keep your device in landscape mode",
-  "To explore my technical skills, click on the laptop on the desk under the window",
-  "To view my certifications, click on the board at the back, to the left of the window",
+  "To explore my technical skills, click on the laptop on the desk under the window or if you want to be boring, just click the 'Professional Dashboard' button you see on the left",
+  "To view my certifications, click on the board at the back, to the left of the window or like before just click the 'Certifications' button on the left",
   "Every section has its own story to tell, so please do check out everything in the room and thank you"
 ];
 
 const certificates = [
   {
-    title: "Foundations of AI",
+    title: "Foundations of AI Internship",
     issuer: "Microsoft & Edunet Foundation",
     description: "Introductory AI concepts and foundations, covering basic AI techniques and applications",
     link: "https://www.linkedin.com/posts/aditya-suresh-26b457298_ai-microsoft-edunet-activity-7333147161745903617-KxrI/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAEf4NbMBA_gbu08UFg_9KUxb9KDA3d2NCt4"
   },
   {
-    title: "AI & Data Analytics (Green Skills)",
+    title: "AI & Data Analytics (Green Skills) Internship",
     issuer: "AICTE, Shell India & Edunet",
     description: "Applied AI and data analytics with a focus on sustainable and green technologies",
     link: "https://www.linkedin.com/posts/aditya-suresh-26b457298_skills4future-ai-dataanalytics-activity-7334262036190638080-SaFS"
@@ -182,7 +182,7 @@ const certificates = [
   },
   {
     title: "Certificate of Conducting Webots Hackathon",
-    issuer: "Edunet",
+    issuer: "Robotics Society, Amrita Vishwa Vidyapeetham",
     description: "Organized and conducted a hackathon using Webots for robotics simulation",
     link: "https://www.linkedin.com/feed/update/urn:li:activity:7413285080808214528/"
   },
@@ -191,6 +191,12 @@ const certificates = [
     issuer: "Infosys",
     description: "Completed and passed the course for mobile app development via Flutter",
     link: "https://www.linkedin.com/posts/aditya-suresh-26b457298_flutter-mobileappdevelopment-crossplatform-share-7441405744379224064-P4pH?utm_source=share&utm_medium=member_android&rcm=ACoAAEf4NbMBA_gbu08UFg_9KUxb9KDA3d2NCt4"
+  },
+    {
+    title: "Flutter and Backends: Integrating Flutter with Google Firebase",
+    issuer: "Infosys",
+    description: "Earned certification in Flutter mobile development with practical experience in backend integration and building scalable application features",
+    link: "https://www.linkedin.com/posts/aditya-suresh-26b457298_im-pleased-to-share-that-i-have-successfully-share-7449049052060491776-WaS9?utm_source=social_share_send&utm_medium=member_desktop_web&rcm=ACoAAEf4NbMBA_gbu08UFg_9KUxb9KDA3d2NCt4"
   }
 ];
 
