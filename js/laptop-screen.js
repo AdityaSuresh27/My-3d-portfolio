@@ -554,6 +554,7 @@ class LaptopScreen {
     } else if (name === 'projects') {
     const projects = [
       { title: '3D Interactive Portfolio' },
+      { title: 'ClassFlow Mobile App' },
       { title: 'Voice Assistant with AI Support' },
       { title: 'Resume Evaluator with Microsoft Azure' },
       { title: 'Webots Trash Collection Robot' },
@@ -778,6 +779,7 @@ if (name === 'fileManager') {
 }  else if (name === 'projects') {
   const projects = [
     { title: '3D Interactive Portfolio', url: 'https://github.com/AdityaSuresh27/My-3d-portfolio' },
+    { title: 'ClassFlow Mobile App', url: 'https://github.com/AdityaSuresh27/Software-Project-App' },
     { title: 'Voice Assistant with AI Support', url: 'https://github.com/AdityaSuresh27/voice-assistant' },
     { title: 'Resume Evaluator with Microsoft Azure', url: 'https://github.com/AdityaSuresh27/azure-gpt-resume-evaluator' },
     { title: 'Webots Trash Collection Robot', url: 'https://github.com/AdityaSuresh27/trash-sorter-bot' },
@@ -1471,8 +1473,12 @@ const lines = [
   
 } else if (name === 'skills') {
   const skills = [
-    { icon: '🟨', name: 'JavaScript' },
+{ icon: '🟨', name: 'JavaScript' },
     { icon: '🐍', name: 'Python' },
+    { icon: '💙', name: 'Flutter' },
+    { icon: '🎯', name: 'Dart' },
+    { icon: '📱', name: 'Mobile Dev' },
+    { icon: '🖥️', name: 'Frontend Dev' },
     { icon: '🎨', name: 'Three.js' },
     { icon: '🤖', name: 'AI/ML' },
     { icon: '🔷', name: 'C++' },
@@ -1512,6 +1518,13 @@ const lines = [
       tech: ['Three.js', 'WebGL', 'AI'],
       status: '✓ Live',
       url: 'https://github.com/AdityaSuresh27/My-3d-portfolio'
+    },
+    { 
+      title: 'ClassFlow Mobile App', 
+      desc: 'Industrial level mobile application for students to track and oversee their college life', 
+      tech: ['Flutter', 'Dart', 'Frontend'],
+      status: '✓ Live',
+      url: 'https://github.com/AdityaSuresh27/Software-Project-App'
     },
     { 
       title: 'Voice Assistant with AI Support', 
